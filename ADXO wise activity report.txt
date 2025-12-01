@@ -47,6 +47,7 @@ SELECT
                             and     ur.roles_id=7
                       )dxo on bu.teritory_id=dxo.teritory_id
                 JOIN appdxo.v_teritory_all vta ON vta.teritory_id = bt.teritory_id
+		AND  vta.teritory_id=:territoryId
                 JOIN appdxo.brand_representative br ON br.br_user_user_id = bt.bruser_id
                 LEFT JOIN appdxo.br_activity_cons_info baci ON pur.PROD_CONSUMER_ID = baci.BR_ACTIVITY_CONSUMER_ID
                 LEFT JOIN appdxo.chief_wage_earner cwa ON cwa.id = baci.earner_id
