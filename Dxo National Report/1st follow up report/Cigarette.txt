@@ -1,0 +1,387 @@
+select  Distinct
+        so.product_cat_id productCatId,
+        so.segment,
+        so.QMA_COMPANY_ID companyId,
+        so.company_name companyName,
+        so.id productId,
+        so.variant_name variantName,
+        so.serveyedOutlet,
+        fdmax.fdMaxValue,
+        fdmax.lfdMaxValue,
+        sdmax.sdMaxValue,
+        sdmax.lsdMaxValue,
+        nvl(fv.firstVisitOutlet,0) firstVisitOutlet,
+        nvl(fov.followupVisitOutlet,0) followupVisitOutlet,
+        Round(case when so.serveyedOutlet >0 then (nvl(fv.firstVisitOutlet,0)/so.serveyedOutlet) * 100 else 0 end,0) firstVisitAch,
+        Round(case when so.serveyedOutlet >0 then (nvl(fov.followupVisitOutlet,0)/so.serveyedOutlet) * 100 else 0 end,0) followupVisitAch,
+        0 volFirstVisit,
+        nvl((nvl(firstStock,0) + wholeLift) - secondStock,0) volFollowup,
+        volMaxFol.volMaxFollowup,
+        allseg.volFollowup comConsum,
+        allSeg.allSegMaxFol
+from
+(
+select  p.product_cat_id,p.segment,p.QMA_COMPANY_ID,p.company_name,p.id,p.variant_name,count(distinct qa.consumer_id) serveyedOutlet
+from    (select * from v_teritory_all v where 1=1 
+        and (:wingId is null or v.wing_id = :wingId)
+        ) vta
+join    consumer_teritory ct on vta.route_id = ct.teritory_id
+join    consumer c on ct.consumer_id = c.id and status=1
+join    (select * from question_answers where target_date = to_date(:fromDate,'DD-MON-YY')) qa 
+        on c.id = qa.consumer_id
+cross   join (select 
+                    qp.ID,
+                    qp.PRODUCT_NAME,
+                    qp.UNIT,
+                    qp.VARIANT_NAME,
+                    qp.QMA_COMPANY_ID,
+                    qp.PRODUCT_CAT_ID,
+                    case when qp.id in (1,2,3,4,94,95,98,99,100,5,6,7,8,9,10,11,12) then 'Low'
+                         when qp.id in (107,108,106,109,110,105,111,112,104,113,114,47,121) then 'Mid'
+                         when qp.id in (96,97,103,120,116,117,118,119) then 'Slim'
+                    end segment,
+                    c.company_name
+            from    ques_market_product qp
+            join    ques_market_analysis_company c on qp.qma_company_id=c.id
+            where   qp.product_cat_id =1
+            ) p
+group   by p.product_cat_id,p.segment,p.QMA_COMPANY_ID,p.company_name,p.id,p.variant_name
+)so
+LEFT    JOIN 
+            (select  product_cat_id,qma_company_id,segment, fdMaxValue,
+                    max(fdMaxValue) over (partition by product_cat_id, segment) lfdMaxValue
+            from
+            (
+                                    select  product_cat_id,qma_company_id,segment,max(firstVisitOutlet) fdMaxValue
+                                    
+                        from
+                        (select  qmp.product_cat_id,qmp.qma_company_id,qmp.segment,qmp.id,qmp.variant_name,count(distinct pr.consumer_id) firstVisitOutlet
+                        from    (select * from v_teritory_all v where 1=1 
+                                and (:wingId is null or v.wing_id = :wingId)) vta
+                        join    consumer_teritory ct on vta.route_id = ct.teritory_id
+                        join    consumer c on ct.consumer_id = c.id and status=1
+                        join    (select distinct consumer_id from question_answers where target_date = to_date(:fromDate,'DD-MON-YY')) qa 
+                                on c.id = qa.consumer_id
+                        join    (select * from product_record where target_date = to_date(:fromDate,'DD-MON-YY')) pr on qa.consumer_id = pr.consumer_id
+                        join    (select 
+                                        qp.ID,
+                                        qp.PRODUCT_NAME,
+                                        qp.UNIT,
+                                        qp.VARIANT_NAME,
+                                        qp.QMA_COMPANY_ID,
+                                        qp.PRODUCT_CAT_ID,
+                                        case when qp.id in (1,2,3,4,94,95,98,99,100,5,6,7,8,9,10,11,12) then 'Low'
+                                             when qp.id in (107,108,106,109,110,105,111,112,104,113,114,47,121) then 'Mid'
+                                             when qp.id in (96,97,103,120,116,117,118,119) then 'Slim'
+                                        end segment,
+                                        c.company_name
+                                from    ques_market_product qp
+                                join    ques_market_analysis_company c on qp.qma_company_id=c.id
+                                where   qp.product_cat_id =1
+                               ) qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+                        group   by qmp.product_cat_id,qmp.qma_company_id,qmp.segment,qmp.id,qmp.variant_name
+                        )
+                        group by product_cat_id,qma_company_id,segment
+            )
+            )fdmax ON so.product_cat_id=fdmax.product_cat_id and so.qma_company_id=fdmax.qma_company_id and so.segment=fdmax.segment
+LEFT    JOIN 
+            (select  product_cat_id,qma_company_id,segment,sdMaxValue,
+                max(sdMaxValue) over (partition by product_cat_id, segment) lsdMaxValue
+        from
+        (select  product_cat_id,qma_company_id,segment,max(followupVisitOutlet) sdMaxValue
+                    from
+                    (select  qmp.product_cat_id,qmp.qma_company_id,qmp.segment,qmp.id,qmp.variant_name,count(distinct pr.consumer_id) followupVisitOutlet
+                    from    (select * from v_teritory_all v where 1=1 
+                            and (:wingId is null or v.wing_id = :wingId)) vta
+                    join    consumer_teritory ct on vta.route_id = ct.teritory_id
+                    join    consumer c on ct.consumer_id = c.id and status=1
+                    join    (select distinct consumer_id from question_answers where target_date = to_date(:fromDate,'DD-MON-YY') +1) qa 
+                            on c.id = qa.consumer_id
+                            and     qa.consumer_id in (select  distinct pr.consumer_id --firstVisitOutlet
+                                    from    (select * from v_teritory_all v where 1=1 
+                                            and (:wingId is null or v.wing_id = :wingId)
+                                            ) vta
+                                    join    consumer_teritory ct on vta.route_id = ct.teritory_id
+                                    join    consumer c on ct.consumer_id = c.id and status=1
+                                    join    (select * from question_answers where target_date = to_date(:fromDate,'DD-MON-YY')) qa 
+                                            on c.id = qa.consumer_id
+                                    join    (select * from product_record where target_date = to_date(:fromDate,'DD-MON-YY')) pr on qa.consumer_id = pr.consumer_id
+                                    join    ques_market_product qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+                                    and     product_cat_id =1
+                                    )
+                    join    (select * from product_record where target_date = to_date(:fromDate,'DD-MON-YY')+1) pr on qa.consumer_id = pr.consumer_id
+                    join    (select 
+                                    qp.ID,
+                                    qp.PRODUCT_NAME,
+                                    qp.UNIT,
+                                    qp.VARIANT_NAME,
+                                    qp.QMA_COMPANY_ID,
+                                    qp.PRODUCT_CAT_ID,
+                                    case when qp.id in (1,2,3,4,94,95,98,99,100,5,6,7,8,9,10,11,12) then 'Low'
+                                         when qp.id in (107,108,106,109,110,105,111,112,104,113,114,47,121) then 'Mid'
+                                         when qp.id in (96,97,103,120,116,117,118,119) then 'Slim'
+                                    end segment,
+                                    c.company_name
+                            from    ques_market_product qp
+                            join    ques_market_analysis_company c on qp.qma_company_id=c.id
+                            where   qp.product_cat_id =1
+                           ) qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+                    group   by qmp.product_cat_id,qmp.qma_company_id,qmp.segment,qmp.id,qmp.variant_name
+                    )
+                    group by product_cat_id,qma_company_id,segment
+                )
+            )sdmax ON so.product_cat_id=sdmax.product_cat_id and so.qma_company_id=sdmax.qma_company_id AND so.segment=sdmax.segment
+LEFT    JOIN
+(
+select  qmp.product_cat_id,qmp.id,qmp.variant_name,count(distinct pr.consumer_id) firstVisitOutlet
+from    (select * from v_teritory_all v where 1=1 
+        and (:wingId is null or v.wing_id = :wingId)
+        ) vta
+join    consumer_teritory ct on vta.route_id = ct.teritory_id
+join    consumer c on ct.consumer_id = c.id and status=1
+join    (select distinct consumer_id from question_answers where target_date = to_date(:fromDate,'DD-MON-YY')) qa 
+        on c.id = qa.consumer_id
+join    (select * from product_record where target_date = to_date(:fromDate,'DD-MON-YY')) pr on qa.consumer_id = pr.consumer_id
+join    ques_market_product qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+and     product_cat_id =1
+group   by qmp.product_cat_id,qmp.id,qmp.variant_name
+)fv     ON so.product_cat_id=fv.product_cat_id and so.id=fv.id
+LEFT    JOIN
+(
+select  qmp.product_cat_id,qmp.id,qmp.variant_name,count(distinct pr.consumer_id) followupVisitOutlet
+from    (select * from v_teritory_all v where 1=1 
+        and (:wingId is null or v.wing_id = :wingId)
+        ) vta
+join    consumer_teritory ct on vta.route_id = ct.teritory_id
+join    consumer c on ct.consumer_id = c.id and status=1
+join    (select distinct consumer_id from question_answers where target_date = to_date(:fromDate,'DD-MON-YY') +1) qa 
+        on c.id = qa.consumer_id
+and     qa.consumer_id in (select  distinct pr.consumer_id --firstVisitOutlet
+                            from    (select * from v_teritory_all v where 1=1 
+                                    and (:wingId is null or v.wing_id = :wingId)
+                                    ) vta
+                            join    consumer_teritory ct on vta.route_id = ct.teritory_id
+                            join    consumer c on ct.consumer_id = c.id and status=1
+                            join    (select distinct consumer_id from question_answers where target_date = to_date(:fromDate,'DD-MON-YY')) qa 
+                                    on c.id = qa.consumer_id
+                            join    (select * from product_record where target_date = to_date(:fromDate,'DD-MON-YY')) pr on qa.consumer_id = pr.consumer_id
+                            join    ques_market_product qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+                            and     product_cat_id =1
+                            )
+join    (select * from product_record where target_date = to_date(:fromDate,'DD-MON-YY')+1) pr on qa.consumer_id = pr.consumer_id
+join    ques_market_product qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+and     product_cat_id =1
+group   by qmp.product_cat_id,qmp.product_cat_id,qmp.id,qmp.variant_name
+)fov    ON so.product_cat_id=fov.product_cat_id and so.id=fov.id
+LEFT    JOIN (
+                    select  qmp.product_cat_id,qmp.id,qmp.variant_name,sum(pr.PRODUCT_STOCK) firstStock
+        from    (select * from v_teritory_all v where 1=1 
+                and (:wingId is null or v.wing_id = :wingId)
+                ) vta
+        join    consumer_teritory ct on vta.route_id = ct.teritory_id
+        join    consumer c on ct.consumer_id = c.id and status=1
+        join    (select distinct consumer_id from question_answers where target_date = to_date(:fromDate,'DD-MON-YY')) qa 
+                on c.id = qa.consumer_id
+        join    (select * from product_record where target_date = to_date(:fromDate,'DD-MON-YY')) pr on qa.consumer_id = pr.consumer_id
+        join    ques_market_product qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+        and     product_cat_id =1
+        group   by qmp.product_cat_id,qmp.id,qmp.variant_name
+        ) fds ON so.product_cat_id=fds.product_cat_id and so.id=fds.id
+LEFT    JOIN (
+                    select  qmp.product_cat_id,qmp.id,qmp.variant_name,sum(pr.PRODUCT_STOCK) secondStock,
+                nvl(sum(pr.whole_sale+pr.company_lifting),0) wholeLift
+        from    (select * from v_teritory_all v where 1=1 
+                and (:wingId is null or v.wing_id = :wingId)
+                ) vta
+        join    consumer_teritory ct on vta.route_id = ct.teritory_id
+        join    consumer c on ct.consumer_id = c.id and status=1
+        join    (select distinct consumer_id from question_answers where target_date = to_date(:fromDate,'DD-MON-YY') +1) qa 
+                on c.id = qa.consumer_id
+                and qa.consumer_id in (select  distinct pr.consumer_id --firstVisitOutlet
+                            from    (select * from v_teritory_all v where 1=1 
+                                    and (:wingId is null or v.wing_id = :wingId)
+                                    ) vta
+                            join    consumer_teritory ct on vta.route_id = ct.teritory_id
+                            join    consumer c on ct.consumer_id = c.id and status=1
+                            join    (select distinct consumer_id from question_answers where target_date = to_date(:fromDate,'DD-MON-YY')) qa 
+                                    on c.id = qa.consumer_id
+                            join    (select * from product_record where target_date = to_date(:fromDate,'DD-MON-YY')) pr on qa.consumer_id = pr.consumer_id
+                            join    ques_market_product qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+                            and     product_cat_id =1
+                            )
+        join    (select * from product_record where target_date = to_date(:fromDate,'DD-MON-YY')+1) pr on qa.consumer_id = pr.consumer_id
+        join    ques_market_product qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+        and     product_cat_id =1
+        group   by qmp.product_cat_id,qmp.id,qmp.variant_name
+        ) sds ON so.product_cat_id=sds.product_cat_id and so.id=sds.id
+LEFT    JOIN (
+                        select  product_cat_id,
+                    segment,
+                    QMA_COMPANY_ID,
+                    volFollowup,
+                    sum(volFollowup) over (partition by product_cat_id, segment) volMaxFollowup
+            from
+            (select  
+                    so.product_cat_id,
+                    so.segment,
+                    so.QMA_COMPANY_ID,
+                    nvl((nvl(firstStock,0) + wholeLift) - secondStock,0) volFollowup
+            from
+            (
+            select  p.product_cat_id,p.segment,p.QMA_COMPANY_ID,p.company_name,p.id,p.variant_name,count(distinct qa.consumer_id) serveyedOutlet
+            from    (select * from v_teritory_all v where 1=1 
+                    and (:wingId is null or v.wing_id = :wingId)
+                    ) vta
+            join    consumer_teritory ct on vta.route_id = ct.teritory_id
+            join    consumer c on ct.consumer_id = c.id and status=1
+            join    (select distinct consumer_id from question_answers where target_date = to_date(:fromDate,'DD-MON-YY')) qa 
+                    on c.id = qa.consumer_id
+            cross   join (select 
+                                qp.ID,
+                                qp.PRODUCT_NAME,
+                                qp.UNIT,
+                                qp.VARIANT_NAME,
+                                qp.QMA_COMPANY_ID,
+                                qp.PRODUCT_CAT_ID,
+                                case when qp.id in (1,2,3,4,94,95,98,99,100,5,6,7,8,9,10,11,12) then 'Low'
+                                     when qp.id in (107,108,106,109,110,105,111,112,104,113,114,47,121) then 'Mid'
+                                     when qp.id in (96,97,103,120,116,117,118,119) then 'Slim'
+                                end segment,
+                                c.company_name
+                        from    ques_market_product qp
+                        join    ques_market_analysis_company c on qp.qma_company_id=c.id
+                        where   qp.product_cat_id =1
+                        ) p
+            group   by p.product_cat_id,p.segment,p.QMA_COMPANY_ID,p.company_name,p.id,p.variant_name
+            )so
+            LEFT    JOIN (
+                                select  qmp.product_cat_id,qmp.id,qmp.variant_name,sum(pr.PRODUCT_STOCK) firstStock
+                    from    (select * from v_teritory_all v where 1=1 
+                            and (:wingId is null or v.wing_id = :wingId)
+                            ) vta
+                    join    consumer_teritory ct on vta.route_id = ct.teritory_id
+                    join    consumer c on ct.consumer_id = c.id and status=1
+                    join    (select distinct consumer_id from question_answers where target_date = to_date(:fromDate,'DD-MON-YY')) qa 
+                            on c.id = qa.consumer_id
+                    join    (select * from product_record where target_date = to_date(:fromDate,'DD-MON-YY')) pr on qa.consumer_id = pr.consumer_id
+                    join    ques_market_product qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+                    and     product_cat_id =1
+                    group   by qmp.product_cat_id,qmp.id,qmp.variant_name
+                    ) fds ON so.product_cat_id=fds.product_cat_id and so.id=fds.id
+            LEFT    JOIN (
+                                select  qmp.product_cat_id,qmp.id,qmp.variant_name,sum(pr.PRODUCT_STOCK) secondStock,
+                            nvl(sum(pr.whole_sale+pr.company_lifting),0) wholeLift
+                    from    (select * from v_teritory_all v where 1=1 
+                            and (:wingId is null or v.wing_id = :wingId)
+                            ) vta
+                    join    consumer_teritory ct on vta.route_id = ct.teritory_id
+                    join    consumer c on ct.consumer_id = c.id and status=1
+                    join    (select distinct consumer_id from question_answers where target_date = to_date(:fromDate,'DD-MON-YY') +1) qa 
+                            on c.id = qa.consumer_id
+                            and qa.consumer_id in (select  distinct pr.consumer_id --firstVisitOutlet
+                                        from    (select * from v_teritory_all v where 1=1 
+                                                and (:wingId is null or v.wing_id = :wingId)
+                                                ) vta
+                                        join    consumer_teritory ct on vta.route_id = ct.teritory_id
+                                        join    consumer c on ct.consumer_id = c.id and status=1
+                                        join    (select distinct consumer_id from question_answers where target_date = to_date(:fromDate,'DD-MON-YY')) qa 
+                                                on c.id = qa.consumer_id
+                                        join    (select * from product_record where target_date = to_date(:fromDate,'DD-MON-YY')) pr on qa.consumer_id = pr.consumer_id
+                                        join    ques_market_product qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+                                        and     product_cat_id =1
+                                        )
+                    join    (select * from product_record where target_date = to_date(:fromDate,'DD-MON-YY')+1) pr on qa.consumer_id = pr.consumer_id
+                    join    ques_market_product qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+                    and     product_cat_id =1
+                    group   by qmp.product_cat_id,qmp.id,qmp.variant_name
+                    ) sds ON so.product_cat_id=sds.product_cat_id and so.id=sds.id
+                )
+            ) volMaxFol ON so.product_cat_id=volMaxFol.product_cat_id and so.qma_company_id=volMaxFol.qma_company_id AND so.segment=volMaxFol.segment
+LEFT        JOIN (
+
+                    select  product_cat_id,
+                    QMA_COMPANY_ID,
+                    volFollowup,
+                    sum(volFollowup) over (partition by product_cat_id) allSegMaxFol
+            from
+            (select  product_cat_id,
+                    QMA_COMPANY_ID,
+                    sum(volFollowup) volFollowup
+            from (select  
+                    so.product_cat_id,
+                    so.segment,
+                    so.QMA_COMPANY_ID,
+                    nvl((nvl(firstStock,0) + wholeLift) - secondStock,0) volFollowup
+            from
+            (
+            select  p.product_cat_id,p.segment,p.QMA_COMPANY_ID,p.company_name,p.id,p.variant_name,count(distinct qa.consumer_id) serveyedOutlet
+            from    (select * from v_teritory_all v where 1=1 
+                    and (:wingId is null or v.wing_id = :wingId)
+                    ) vta
+            join    consumer_teritory ct on vta.route_id = ct.teritory_id
+            join    consumer c on ct.consumer_id = c.id and status=1
+            join    (select distinct consumer_id from question_answers where target_date = to_date(:fromDate,'DD-MON-YY')) qa 
+                    on c.id = qa.consumer_id
+            cross   join (select 
+                                qp.ID,
+                                qp.PRODUCT_NAME,
+                                qp.UNIT,
+                                qp.VARIANT_NAME,
+                                qp.QMA_COMPANY_ID,
+                                qp.PRODUCT_CAT_ID,
+                                case when qp.id in (1,2,3,4,94,95,98,99,100,5,6,7,8,9,10,11,12) then 'Low'
+                                     when qp.id in (107,108,106,109,110,105,111,112,104,113,114,47,121) then 'Mid'
+                                     when qp.id in (96,97,103,120,116,117,118,119) then 'Slim'
+                                end segment,
+                                c.company_name
+                        from    ques_market_product qp
+                        join    ques_market_analysis_company c on qp.qma_company_id=c.id
+                        where   qp.product_cat_id =1
+                        ) p
+            group   by p.product_cat_id,p.segment,p.QMA_COMPANY_ID,p.company_name,p.id,p.variant_name
+            )so
+            LEFT    JOIN (
+                                select  qmp.product_cat_id,qmp.id,qmp.variant_name,sum(pr.PRODUCT_STOCK) firstStock
+                    from    (select * from v_teritory_all v where 1=1 
+                            and (:wingId is null or v.wing_id = :wingId)
+                            ) vta
+                    join    consumer_teritory ct on vta.route_id = ct.teritory_id
+                    join    consumer c on ct.consumer_id = c.id and status=1
+                    join    (select distinct consumer_id from question_answers where target_date = to_date(:fromDate,'DD-MON-YY')) qa 
+                            on c.id = qa.consumer_id
+                    join    (select * from product_record where target_date = to_date(:fromDate,'DD-MON-YY')) pr on qa.consumer_id = pr.consumer_id
+                    join    ques_market_product qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+                    and     product_cat_id =1
+                    group   by qmp.product_cat_id,qmp.id,qmp.variant_name
+                    ) fds ON so.product_cat_id=fds.product_cat_id and so.id=fds.id
+            LEFT    JOIN (
+                                select  qmp.product_cat_id,qmp.id,qmp.variant_name,sum(pr.PRODUCT_STOCK) secondStock,
+                            nvl(sum(pr.whole_sale+pr.company_lifting),0) wholeLift
+                    from    (select * from v_teritory_all v where 1=1 
+                            and (:wingId is null or v.wing_id = :wingId)
+                            ) vta
+                    join    consumer_teritory ct on vta.route_id = ct.teritory_id
+                    join    consumer c on ct.consumer_id = c.id and status=1
+                    join    (select distinct consumer_id from question_answers where target_date = to_date(:fromDate,'DD-MON-YY') +1) qa 
+                            on c.id = qa.consumer_id
+                            and qa.consumer_id in (select  distinct pr.consumer_id --firstVisitOutlet
+                                        from    (select * from v_teritory_all v where 1=1 
+                                                and (:wingId is null or v.wing_id = :wingId)
+                                                ) vta
+                                        join    consumer_teritory ct on vta.route_id = ct.teritory_id
+                                        join    consumer c on ct.consumer_id = c.id and status=1
+                                        join    (select distinct consumer_id from question_answers where target_date = to_date(:fromDate,'DD-MON-YY')) qa 
+                                                on c.id = qa.consumer_id
+                                        join    (select * from product_record where target_date = to_date(:fromDate,'DD-MON-YY')) pr on qa.consumer_id = pr.consumer_id
+                                        join    ques_market_product qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+                                        and     product_cat_id =1
+                                        )
+                    join    (select * from product_record where target_date = to_date(:fromDate,'DD-MON-YY')+1) pr on qa.consumer_id = pr.consumer_id
+                    join    ques_market_product qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+                    and     product_cat_id =1
+                    group   by qmp.product_cat_id,qmp.id,qmp.variant_name
+                    ) sds ON so.product_cat_id=sds.product_cat_id and so.id=sds.id
+                )
+            group by product_cat_id,QMA_COMPANY_ID)     
+)allSeg ON so.product_cat_id=allSeg.product_cat_id and so.qma_company_id=allSeg.qma_company_id
+Order   by so.product_cat_id,so.segment,so.QMA_COMPANY_ID

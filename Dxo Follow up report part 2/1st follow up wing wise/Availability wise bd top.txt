@@ -1,0 +1,62 @@
+select  teritory_id,
+        teritory_name,
+        
+        bdTotalCon,     
+        bdTotalCon2,
+        
+        msbCon,
+        msbCon2,
+        
+        supremeAnyCon,
+        supremeAnyCon2
+from
+(select  
+        bd.teritory_id,
+        bd.teritory_name,
+        bd.bdTotalCon,     
+        pd.bdTotalCon2,
+        bd.msbCon,
+        pd.msbCon2,
+        bd.supremeAnyCon,
+        pd.supremeAnyCon2
+from
+(select  *
+from (select distinct teritory_id,teritory_name from v_teritory_all v where 1=1 and (:wingId is null or v.wing_id = :wingId)) v
+Left    Join
+(select  
+        vta.teritory_id teritoryId,
+        vta.teritory_name teritoryName,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qmp.id in (1,2,94) then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) bdTotalCon,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qmp.id=3 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) msbCon,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qmp.id in (98,99) then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) supremeAnyCon
+from    (select * from v_teritory_all v where 1=1 and (:wingId is null or v.wing_id = :wingId)) vta
+join    consumer_teritory ct on vta.route_id = ct.teritory_id
+join    consumer c on ct.consumer_id = c.id and status=1
+        join (select * from question_answers where target_date = :targetDate) qa on c.id = qa.consumer_id
+left    join product_record pr on qa.consumer_id = pr.consumer_id
+left    join ques_market_product qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+group   by vta.teritory_id,vta.teritory_name
+) bd
+On  v.teritory_id=bd.teritoryId
+)bd
+FULL JOIN
+(select  
+        vta.teritory_id teritoryId2,
+        vta.teritory_name teritoryName2,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id in (1,2,94) then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) bdTotalCon2,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id=3 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) msbCon2,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id in (98,99) then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) supremeAnyCon2
+from    (select * from v_teritory_all v where 1=1 and (:wingId is null or v.wing_id = :wingId)) vta
+join    consumer_teritory ct on vta.route_id = ct.teritory_id
+join    consumer c on ct.consumer_id = c.id and status=1
+join    question_answers qa on c.id=qa.consumer_id
+and     target_date = to_date(:targetDate,'DD-MON-YY') + 1
+join    product_record pr on qa.consumer_id=pr.consumer_id
+join    ques_market_product qm on pr.QUES_MARKET_PRODUCT_ID=qm.id
+group   by vta.teritory_id,vta.teritory_name
+)pd
+        ON bd.teritory_id=pd.teritoryId2
+        )
+where  bdTotalCon is not null and bdTotalCon2 is not null
+order by bdTotalCon2 desc
+FETCH FIRST 5 ROWS ONLY

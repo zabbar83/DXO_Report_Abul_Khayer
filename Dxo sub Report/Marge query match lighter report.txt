@@ -1,0 +1,169 @@
+select  lig.wing_id,
+        lig.wing_name,
+        NVL(lig.ligOutlet, 0) AS ligOutlet, 
+        NVL(lig.ligSellingOut, 0) AS ligSellingOut,
+        NVL(lig.stockAvailOutlet, 0) AS stockAvailOutlet,
+        NVL(lig.ligAvailable, 0) AS ligAvailable,
+        
+        NVL(lig.ligOutlet2, 0) AS ligOutlet2,
+        NVL(lig.ligSellingOut2, 0) AS ligSellingOut2,
+        NVL(lig.stockAvailOutlet2, 0) AS stockAvailOutlet2,
+        NVL(lig.ligAvailable2, 0) AS ligAvailable2,
+        
+        NVL(mat.matchOutlet, 0) AS matchOutlet,
+        NVL(mat.matchSellingOut, 0) AS matchSellingOut,
+        NVL(mat.maStockAvaOutlet, 0) AS maStockAvaOutlet,
+        NVL(mat.matchAvailable, 0) AS matchAvailable,
+        
+        NVL(mat.matchOutlet2, 0) AS matchOutlet2,
+        NVL(mat.matchSellingOut2, 0) AS matchSellingOut2,
+        NVL(mat.maStockAvaOutlet2, 0) AS maStockAvaOutlet2,
+        NVL(mat.matchAvailable2, 0) AS matchAvailable2
+
+from
+(select  
+        abd.wing_id,
+        abd.wing_name,
+        abd.ligOutlet,
+        abd.ligSellingOut,
+        abd.stockAvailOutlet,
+        abd.ligAvailable,
+        
+        apd.ligOutlet2,
+        apd.ligSellingOut2,
+        apd.stockAvailOutlet2,
+        apd.ligAvailable2
+from
+(select  *
+from(select distinct wing_id,wing_name from v_teritory_all)v
+Left    Join
+(select  
+        v.wing_id wingId,v.wing_name wingName,
+        count(distinct case when qmp.id in (54,55,101) then pr.consumer_id else null end)ligOutlet,
+        count(distinct case when qmp.id in (54,55,101) then qa.consumer_id else null end) ligSellingOut,
+        count(distinct case when qmp.id in (54,55,101) and pr.product_consumption > 0 then pr.consumer_id else null end) stockAvailOutlet,
+        round(case when count(distinct case when qmp.id in (54,55,101) then qa.consumer_id else null end) > 0 then (count(distinct case when qmp.id in (54,55,101) and pr.product_consumption > 0 then pr.consumer_id else null end) * 100) /count(distinct case when qmp.id in (54,55,101) then qa.consumer_id else null end) else 0 end) ligAvailable
+from    v_teritory_all v
+join    consumer_teritory ct on ct.teritory_id=v.route_id
+join    consumer c on ct.consumer_id=c.id and c.status=1
+join    product_record pr on c.id=pr.consumer_id
+and     pr.target_date= :targetDate
+join    ques_market_product qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+left    join (select  distinct qao.id slim_cig_ans_id,q.consumer_id
+            from    question_answers q
+            join    product_record pr on q.consumer_id=pr.consumer_id
+            and     pr.target_date= :targetDate
+            join    question_opts_map qom on q.QUESTION_OPTION_MAP_ID=qom.id and q.question_id=12
+            join    ques_activity_opts qao on qom.question_options_id=qao.id and qao.id=26
+        )qa on pr.consumer_id=qa.consumer_id
+left    join own_market_product_map ompm on qmp.id=ompm.market_product_id
+left    join territory_products tp on ompm.own_product_id=tp.product_id
+group   by v.wing_id,v.wing_name)abd
+on v.wing_id=abd.wingId
+)abd
+FULL JOIN
+(select  
+        v.wing_id wingId,v.wing_name wingName,
+        count(distinct case when qmp.id in (54,55,101) then pr.consumer_id else null end)ligOutlet2,
+        count(distinct case when qmp.id in (54,55,101) then qa.consumer_id else null end) ligSellingOut2,
+        count(distinct case when qmp.id in (54,55,101) and pr.product_consumption > 0 then pr.consumer_id else null end) stockAvailOutlet2,
+        round(case when count(distinct case when qmp.id in (54,55,101) then qa.consumer_id else null end) > 0 then (count(distinct case when qmp.id in (54,55,101) and pr.product_consumption > 0 then pr.consumer_id else null end) * 100) /count(distinct case when qmp.id in (54,55,101) then qa.consumer_id else null end) else 0 end) ligAvailable2
+from    v_teritory_all v
+join    consumer_teritory ct on ct.teritory_id=v.route_id
+join    consumer c on ct.consumer_id=c.id and c.status=1
+join    (select * from product_record 
+                where route_id in (select distinct route_id from product_record where target_date= :targetDate)
+                and target_date between to_date(:targetDate,'DD-MON-YY') -30 and to_date(:targetDate,'DD-MON-YY')
+        ) pr on c.id=pr.consumer_id
+join    (select
+                pr.route_id,
+                max(case when pr.target_date < to_date(:targetDate,'DD-MON-YY') then pr.target_date else null end) previous_date
+        from    product_record pr
+        where   target_date between to_date(:targetDate,'DD-MON-YY') -30 and to_date(:targetDate,'DD-MON-YY')
+        and     route_id in(select distinct route_id from product_record where target_date = to_date(:targetDate,'DD-MON-YY'))
+        group   by pr.route_id) pr2
+        on pr.route_id=pr2.route_id and pr.target_date=pr2.previous_date
+join    question_answers qa on pr.consumer_id=qa.consumer_id
+join    ques_market_product qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+left    join question_opts_map qom on qa.QUESTION_OPTION_MAP_ID=qom.id and qa.question_id=12
+left    join ques_activity_opts qao on qom.question_options_id=qao.id and qao.id=26
+left    join own_market_product_map ompm on qmp.id=ompm.market_product_id
+left    join territory_products tp on ompm.own_product_id=tp.product_id
+group   by v.wing_id,v.wing_name
+)apd
+ON abd.wing_id=apd.wingId
+)lig
+JOIN
+(select  
+        abd.wing_id,
+        abd.wing_name,
+        abd.matchOutlet,
+        abd.matchSellingOut,
+        abd.maStockAvaOutlet,
+        abd.matchAvailable,
+        
+        apd.matchOutlet2,
+        apd.matchSellingOut2,
+        apd.maStockAvaOutlet2,
+        apd.matchAvailable2
+from
+(select  *
+from(select distinct wing_id,wing_name from v_teritory_all)v
+Left    Join
+(select  
+        v.wing_id wingId,v.wing_name wingName,
+        count(distinct case when qmp.id in (48,49) then pr.consumer_id else null end)matchOutlet,
+        count(distinct case when qmp.id in (48,49) then qa.consumer_id else null end) matchSellingOut,
+        count(distinct case when qmp.id in (48,49) and pr.product_consumption > 0 then pr.consumer_id else null end) maStockAvaOutlet,
+        round(case when count(distinct case when qmp.id in (48,49) then qa.consumer_id else null end) > 0 then (count(distinct case when qmp.id in (48,49) and pr.product_consumption > 0 then pr.consumer_id else null end) * 100) /count(distinct case when qmp.id in (48,49) then qa.consumer_id else null end) else 0 end) matchAvailable
+from    v_teritory_all v
+join    consumer_teritory ct on ct.teritory_id=v.route_id
+join    consumer c on ct.consumer_id=c.id and c.status=1
+join    product_record pr on c.id=pr.consumer_id
+and     pr.target_date= :targetDate
+join    ques_market_product qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+left    join (select  distinct qao.id slim_cig_ans_id,q.consumer_id
+            from    question_answers q
+            join    product_record pr on q.consumer_id=pr.consumer_id
+            and     pr.target_date= :targetDate
+            join    question_opts_map qom on q.QUESTION_OPTION_MAP_ID=qom.id and q.question_id=12
+            join    ques_activity_opts qao on qom.question_options_id=qao.id and qao.id=25
+        )qa on pr.consumer_id=qa.consumer_id
+left    join own_market_product_map ompm on qmp.id=ompm.market_product_id
+left    join territory_products tp on ompm.own_product_id=tp.product_id
+group   by v.wing_id,v.wing_name)abd
+on v.wing_id=abd.wingId
+)abd
+FULL JOIN
+(select  
+        v.wing_id wingId,v.wing_name wingName,
+        count(distinct case when qmp.id in (48,49) then pr.consumer_id else null end)matchOutlet2,
+        count(distinct case when qmp.id in (48,49) then qa.consumer_id else null end) matchSellingOut2,
+        count(distinct case when qmp.id in (48,49) and pr.product_consumption > 0 then pr.consumer_id else null end) maStockAvaOutlet2,
+        round(case when count(distinct case when qmp.id in (48,49) then qa.consumer_id else null end) > 0 then (count(distinct case when qmp.id in (48,49) and pr.product_consumption > 0 then pr.consumer_id else null end) * 100) /count(distinct case when qmp.id in (48,49) then qa.consumer_id else null end) else 0 end) matchAvailable2
+from    v_teritory_all v
+join    consumer_teritory ct on ct.teritory_id=v.route_id
+join    consumer c on ct.consumer_id=c.id and c.status=1
+join    (select * from product_record 
+                where route_id in (select distinct route_id from product_record where target_date= :targetDate)
+                and target_date between to_date(:targetDate,'DD-MON-YY') -30 and to_date(:targetDate,'DD-MON-YY')
+        ) pr on c.id=pr.consumer_id
+join    (select
+                pr.route_id,
+                max(case when pr.target_date < to_date(:targetDate,'DD-MON-YY') then pr.target_date else null end) previous_date
+        from    product_record pr
+        where   target_date between to_date(:targetDate,'DD-MON-YY') -30 and to_date(:targetDate,'DD-MON-YY')
+        and     route_id in(select distinct route_id from product_record where target_date = to_date(:targetDate,'DD-MON-YY'))
+        group   by pr.route_id) pr2
+        on pr.route_id=pr2.route_id and pr.target_date=pr2.previous_date
+join    question_answers qa on pr.consumer_id=qa.consumer_id
+join    ques_market_product qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+left    join question_opts_map qom on qa.QUESTION_OPTION_MAP_ID=qom.id and qa.question_id=12
+left    join ques_activity_opts qao on qom.question_options_id=qao.id and qao.id=25
+left    join own_market_product_map ompm on qmp.id=ompm.market_product_id
+left    join territory_products tp on ompm.own_product_id=tp.product_id
+group   by v.wing_id,v.wing_name
+)apd
+ON abd.wing_id=apd.wingId
+)mat ON lig.wing_id=mat.wing_id
+order by lig.wing_id

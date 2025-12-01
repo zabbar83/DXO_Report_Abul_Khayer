@@ -1,0 +1,137 @@
+select  
+        productCatId,
+        companyName,
+        serveyedOutlet,
+        firstVisOut,
+        sfVisOut2,
+        NVL(volFollowup,0)volFollowup,
+        NVL(sum(volFollowup) over (partition by productCatId),0) allVolFollowup,
+        NVL(volFollowup2,0) volFollowup2,
+        NVL(sum(volFollowup2) over (partition by productCatId),0) allVolFollowup2
+from
+(
+select  vo.product_cat_id productCatId,vo.company_name companyName,max(sv.serveyedOutlet) serveyedOutlet, sum(firstVisOut) firstVisOut,
+        max(sflig2.sfligVisOut2) sfVisOut2,
+        (sum(firstProdSto) + max(wholeLiftLig)) - max(secLigStock) volFollowup,
+        (sum(firstProdSto) + max(wholeLiftLig2)) - max(secLigStock2) volFollowup2
+from
+(select  qmp.product_cat_id,
+        case when qmp.product_cat_id=4 and qmp.QMA_COMPANY_ID =3 then 'AKT Lighter'
+             when qmp.product_cat_id=4 and qmp.QMA_COMPANY_ID =24 then 'Sunlite'
+             when qmp.product_cat_id=4 and qmp.QMA_COMPANY_ID not in (3,24) then 'Others Lighter'
+        end company_name,
+        count(distinct qa.consumer_id) firstVisOut,
+        sum(pr.product_stock) firstProdSto
+from    (select * from v_teritory_all v where 1=1 
+        and (:wingId is null or v.wing_id = :wingId)
+        ) vta
+join    consumer_teritory ct on vta.route_id = ct.teritory_id
+join    consumer c on ct.consumer_id = c.id and status=1
+join    (select distinct consumer_id from question_answers where target_date = to_date(:fromDate,'DD-MON-YY')) qa 
+        on c.id = qa.consumer_id
+join    (select * from product_record where target_date = to_date(:fromDate,'DD-MON-YY')) pr on qa.consumer_id=pr.consumer_id
+join    ques_market_product qmp on pr.ques_market_product_id=qmp.id
+and     qmp.product_cat_id in (4)
+join    ques_market_analysis_company com on qmp.qma_company_id=com.id
+group   by qmp.product_cat_id,qmp.QMA_COMPANY_ID,com.company_name
+) vo
+JOIN    (select  qmp.product_cat_id,
+                    count(distinct qa.consumer_id) serveyedOutlet
+            from    (select * from v_teritory_all v where 1=1 
+                    and (:wingId is null or v.wing_id = :wingId)
+                    ) vta
+            join    consumer_teritory ct on vta.route_id = ct.teritory_id
+            join    consumer c on ct.consumer_id = c.id and status=1
+            join    (select distinct consumer_id from question_answers ) qa 
+                    on c.id = qa.consumer_id
+            join    (select * from product_record where target_date = to_date(:fromDate,'DD-MON-YY')) pr on qa.consumer_id=pr.consumer_id
+            join    ques_market_product qmp on pr.ques_market_product_id=qmp.id
+            and     qmp.product_cat_id in (4)
+            join    ques_market_analysis_company com on qmp.qma_company_id=com.id
+            group   by qmp.product_cat_id
+        )sv ON vo.product_cat_id=sv.product_cat_id
+LEFT    JOIN (
+                            select  vo.product_cat_id,vo.company_name, sum(sfligVisOut) sfligVisOut,
+                                    sum(secLigStock)secLigStock,
+                                    sum(wholeLiftLig) wholeLiftLig
+                from
+                (select  qmp.product_cat_id,
+                        case when qmp.product_cat_id=4 and qmp.QMA_COMPANY_ID =3 then 'AKT Lighter'
+                             when qmp.product_cat_id=4 and qmp.QMA_COMPANY_ID =24 then 'Sunlite'
+                             when qmp.product_cat_id=4 and qmp.QMA_COMPANY_ID not in (3,24) then 'Others Lighter'
+                        end company_name,
+                        count(distinct qa.consumer_id) sfligVisOut,
+                        sum(pr.PRODUCT_STOCK) secLigStock,
+                        nvl(sum(pr.whole_sale+pr.company_lifting),0) wholeLiftLig
+                from    (select * from v_teritory_all v where 1=1 
+                        and (:wingId is null or v.wing_id = :wingId)
+                        ) vta
+                join    consumer_teritory ct on vta.route_id = ct.teritory_id
+                join    consumer c on ct.consumer_id = c.id and status=1
+                join    (select distinct consumer_id from question_answers where target_date = to_date(:fromDate,'DD-MON-YY')+1) qa 
+                        on c.id = qa.consumer_id
+                and     qa.consumer_id in(
+                            select  distinct qa.consumer_id
+                            from    (select * from v_teritory_all v where 1=1 
+                                    and (:wingId is null or v.wing_id = :wingId)
+                                    ) vta
+                            join    consumer_teritory ct on vta.route_id = ct.teritory_id
+                            join    consumer c on ct.consumer_id = c.id and status=1
+                            join    (select distinct consumer_id from question_answers where target_date = to_date(:fromDate,'DD-MON-YY')) qa 
+                                    on c.id = qa.consumer_id
+                            join    (select * from product_record where target_date = to_date(:fromDate,'DD-MON-YY')) pr on qa.consumer_id=pr.consumer_id
+                            join    ques_market_product qmp on pr.ques_market_product_id=qmp.id
+                            and     qmp.product_cat_id =4
+                        )
+                join    (select * from product_record where target_date = to_date(:fromDate,'DD-MON-YY')+1) pr on qa.consumer_id=pr.consumer_id
+                join    ques_market_product qmp on pr.ques_market_product_id=qmp.id
+                and     qmp.product_cat_id =4
+                join    ques_market_analysis_company com on qmp.qma_company_id=com.id
+                group   by qmp.product_cat_id,qmp.QMA_COMPANY_ID,com.company_name
+                )vo
+                group  by vo.product_cat_id,vo.company_name
+            ) sflig ON vo.product_cat_id=sflig.product_cat_id and vo.company_name=sflig.company_name
+LEFT    JOIN (
+                            select  vo.product_cat_id,vo.company_name, sum(sfligVisOut2) sfligVisOut2,
+                                    sum(secLigStock2)secLigStock2,
+                                    sum(wholeLiftLig2) wholeLiftLig2
+                from
+                (select  qmp.product_cat_id,
+                        case when qmp.product_cat_id=4 and qmp.QMA_COMPANY_ID =3 then 'AKT Lighter'
+                             when qmp.product_cat_id=4 and qmp.QMA_COMPANY_ID =24 then 'Sunlite'
+                             when qmp.product_cat_id=4 and qmp.QMA_COMPANY_ID not in (3,24) then 'Others Lighter'
+                        end company_name,
+                        count(distinct qa.consumer_id) sfligVisOut2,
+                        sum(pr.PRODUCT_STOCK) secLigStock2,
+                        nvl(sum(pr.whole_sale+pr.company_lifting),0) wholeLiftLig2
+                from    (select * from v_teritory_all v where 1=1 
+                        and (:wingId is null or v.wing_id = :wingId)
+                        ) vta
+                join    consumer_teritory ct on vta.route_id = ct.teritory_id
+                join    consumer c on ct.consumer_id = c.id and status=1
+                join    (select distinct consumer_id from question_answers where target_date = to_date(:fromDate,'DD-MON-YY')+12) qa 
+                        on c.id = qa.consumer_id
+                and     qa.consumer_id in(
+                            select  distinct qa.consumer_id
+                            from    (select * from v_teritory_all v where 1=1 
+                                    and (:wingId is null or v.wing_id = :wingId)
+                                    ) vta
+                            join    consumer_teritory ct on vta.route_id = ct.teritory_id
+                            join    consumer c on ct.consumer_id = c.id and status=1
+                            join    (select distinct consumer_id from question_answers where target_date = to_date(:fromDate,'DD-MON-YY')) qa 
+                                    on c.id = qa.consumer_id
+                            join    (select * from product_record where target_date = to_date(:fromDate,'DD-MON-YY')) pr on qa.consumer_id=pr.consumer_id
+                            join    ques_market_product qmp on pr.ques_market_product_id=qmp.id
+                            and     qmp.product_cat_id =4
+                        )
+                join    (select * from product_record where target_date = to_date(:fromDate,'DD-MON-YY')+12) pr on qa.consumer_id=pr.consumer_id
+                join    ques_market_product qmp on pr.ques_market_product_id=qmp.id
+                and     qmp.product_cat_id =4
+                join    ques_market_analysis_company com on qmp.qma_company_id=com.id
+                group   by qmp.product_cat_id,qmp.QMA_COMPANY_ID,com.company_name
+                )vo
+                group  by vo.product_cat_id,vo.company_name
+            ) sflig2 ON vo.product_cat_id=sflig2.product_cat_id and vo.company_name=sflig2.company_name
+group   by vo.product_cat_id,vo.company_name
+)
+order  by productCatId

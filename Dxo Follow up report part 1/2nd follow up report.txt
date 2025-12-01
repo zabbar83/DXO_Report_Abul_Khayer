@@ -1,0 +1,535 @@
+select  
+        r1.wing_id wingId,
+        r1.wing_name wingName,
+        r1.teritory_id teritoryId,
+        r1.teritory_name teritoryName,
+        r1.route_id routeId,
+        r1.route_name routeName, 
+        NVL(r1.totalActivityCon, 0) totalActivityCon,
+        NVL(r1.bddfCon, 0) bddfCon,
+        NVL(r1.bdfcCon, 0) bdfcCon,
+        NVL(r1.bdadCon, 0) bdadCon,
+        NVL(r1.bdTotalCon, 0) bdTotalCon,     
+        NVL(r1.msbCon, 0) msbCon,
+        NVL(r1.msbgCon, 0) msbgCon,
+        NVL(r1.fmCon, 0) fmCon,
+        NVL(r1.sigCon, 0) sigCon,
+        NVL(r1.styCon, 0) styCon,
+        NVL(r1.supremeTotalCon, 0) supremeTotalCon,
+        NVL(r1.avonCon, 0) avonCon,
+        NVL(r1.fbCon, 0) fbCon,
+        NVL(r1.slCon, 0) slCon,
+        NVL(r1.matchTotalCon, 0) matchTotalCon,
+        NVL(r1.asterCon, 0) asterCon,
+        NVL(r1.asterstCon, 0) asterstCon,
+        NVL(r1.sparkCon, 0) sparkCon,
+        NVL(r1.lighterTotalCon, 0) lighterTotalCon,
+        NVL(r1.bddfOut, 0) bddfOut,
+        NVL(r1.bdfcOut, 0) bdfcOut,
+        NVL(r1.bdadOut, 0) bdadOut,
+        NVL(r1.bdTotalOut, 0) bdTotalOut,
+        NVL(r1.msbOut, 0) msbOut,
+        NVL(r1.msgOut, 0) msgOut,
+        NVL(r1.supFmaOut, 0) supFmaOut,
+        NVL(r1.supSigOut, 0) supSigOut,
+        NVL(r1.supStyOut, 0) supStyOut,
+        NVL(r1.supTotalOut, 0) supTotalOut,
+        NVL(r1.avonOut, 0) avonOut,
+        NVL(r1.fbOut, 0) fbOut,
+        NVL(r1.slOut, 0) slOut,
+        NVL(r1.matchOut, 0) matchOut,
+        NVL(r1.asterOut, 0) asterOut,
+        NVL(r1.asterstOut, 0) asterstOut,
+        NVL(r1.sparkOut, 0) sparkOut,
+        NVL(r1.lighterTotalOut, 0) lighterTotalOut,
+        
+        NVL(aris.aris_outlet,0) arisOutlet,
+        NVL(aris.slimCigCon, 0) slimCigCon,
+        NVL(aris.aris_stock_outlet,0) aristStockOutlet,
+        NVL(aris.onSlimSelling, 0) onSlimSelling,
+        NVL(aris.onSurveyOutlet, 0) onSurveyOutlet,
+        NVL(aris.aris_outlet2,0) arisOutlet2,
+        NVL(aris.slimCigCon2, 0) slimCigCon2,
+        NVL(aris.aris_stock_outlet2,0) arisStockOut2,
+        NVL(aris.onSlimSelling2, 0) onSlimSelling2,
+        NVL(aris.onSurveyOutlet2, 0) onSurveyOutlet2,
+        
+        NVL(r1.totalConsumer2, 0) totalConsumer2,
+        NVL(r1.bddfCon2, 0) bddfCon2,
+        NVL(r1.bdfcCon2, 0) bdfcCon2,
+        NVL(r1.bdadCon2, 0) bdadCon2,
+        NVL(r1.bdTotalCon2, 0) bdTotalCon2,     
+        NVL(r1.msbCon2, 0) msbCon2,
+        NVL(r1.msbgCon2, 0) msbgCon2,       
+        NVL(r1.fmCon2, 0) fmCon2,
+        NVL(r1.sigCon2, 0) sigCon2,
+        NVL(r1.styCon2, 0) styCon2,
+        NVL(r1.supremeTotalCon2, 0) supremeTotalCon2,
+        NVL(r1.avonCon2, 0) avonCon2,
+        NVL(r1.fbCon2, 0) fbCon2,
+        NVL(r1.slCon2, 0) slCon2,
+        NVL(r1.matchTotalCon2, 0) matchTotalCon2,
+        NVL(r1.asterCon2, 0) asterCon2,
+        NVL(r1.asterstCon2, 0) asterstCon2,
+        NVL(r1.sparkCon2, 0) sparkCon2,
+        NVL(r1.lighterTotalCon2, 0) lighterTotalCon2,
+        NVL(r1.bddfOut2, 0) bddfOut2,
+        NVL(r1.bdfcOut2, 0) bdfcOut2,
+        NVL(r1.bdadOut2, 0) bdadOut2,
+        NVL(r1.bdTotalOut2, 0) bdTotalOut2,
+        NVL(r1.msbOut2, 0) msbOut2,
+        NVL(r1.msgOut2, 0) msgOut2,
+        NVL(r1.supFmaOut2, 0) supFmaOut2,
+        NVL(r1.supSigOut2, 0) supSigOut2,
+        NVL(r1.supStyOut2, 0) supStyOut2,
+        NVL(r1.supTotalOut2, 0) supTotalOut2,
+        NVL(r1.avonOut2, 0) avonOut2,
+        NVL(r1.fbOut2, 0) fbOut2,
+        NVL(r1.slOut2, 0) slOut2,
+        NVL(r1.matchOut2, 0) matchOut2,
+        NVL(r1.asterOut2, 0) asterOut2,
+        NVL(r1.asterstOut2, 0) asterstOut2,
+        NVL(r1.sparkOut2, 0) sparkOut2,
+        NVL(r1.lighterTotalOut2, 0) lighterTotalOut2,
+        
+        NVL(bddfSalesCal, 0) bddfSalesCal,
+        NVL(msbSalesCal, 0) msbSalesCal,
+        NVL(sfmSalesCal, 0)sfmSalesCal,
+        NVL(ssiSalesCal, 0) ssiSalesCal,
+        NVL(supAnySalesCal, 0) supAnySalesCal,
+        NVL(arisSalesCal, 0) arisSalesCal,
+        NVL(derbySalesCal, 0) derbySalesCal,
+        NVL(royalSalesCal, 0) royalSalesCal,
+        NVL(starSalesCal, 0) starSalesCal,
+        NVL(avonSalesCal, 0) avonSalesCal,
+        NVL(ldSalesCal, 0) ldSalesCal,
+        NVL(navySalesCal, 0) navySalesCal,
+        NVL(camelSalesCal, 0) camelSalesCal,
+        NVL(consumer_count,0) consumerCount,
+        0 firstDay,
+        NVL(bddfSales,0)bddfSales,
+        NVL(msbSales,0)msbSales,
+        NVL(sfmSales,0)sfmSales,
+        NVL(ssiSales,0)ssiSales,
+        NVL(supAnySales,0)supAnySales,
+        NVL(arisSales,0)arisSales,
+        NVL(derbySales,0)derbySales,
+        NVL(royalSales,0)royalSales,
+        NVL(starSales,0)starSales,
+        NVL(avonSales,0)avonSales,
+        NVL(ldSales,0)ldSales,
+        NVL(navySales,0)navySales,
+        NVL(camelSales,0)camelSales
+from
+(select  
+        bd.wing_id,
+        bd.wing_name,
+        bd.teritory_id,
+        bd.teritory_name,
+        bd.route_id,
+        bd.route_name,
+        bd.totalConsumer totalActivityCon,
+        bd.bddfCon,
+        bd.bdfcCon,
+        bd.bdadCon,
+        bd.bdTotalCon,     
+        bd.msbCon,
+        bd.msbgCon,       
+        bd.fmCon,
+        bd.sigCon,
+        bd.styCon,
+        bd.supremeTotalCon,
+        bd.avonCon,
+        bd.fbCon,
+        bd.slCon,
+        bd.matchTotalCon,
+        bd.asterCon,
+        bd.asterstCon,
+        bd.sparkCon,
+        bd.lighterTotalCon,
+        bd.bddfOut,
+        bd.bdfcOut,
+        bd.bdadOut,
+        bd.bdTotalOut,
+        bd.msbOut,
+        bd.msgOut,
+        bd.supFmaOut,
+        bd.supSigOut,
+        bd.supStyOut,
+        bd.supTotalOut,
+        bd.avonOut,
+        bd.fbOut,
+        bd.slOut,
+        bd.matchOut,
+        bd.asterOut,
+        bd.asterstOut,
+        bd.sparkOut,
+        bd.lighterTotalOut,
+        
+        pd.totalConsumer2,
+        pd.bddfCon2,
+        pd.bdfcCon2,
+        pd.bdadCon2,
+        pd.bdTotalCon2,     
+        pd.msbCon2,
+        pd.msbgCon2,       
+        pd.fmCon2,
+        pd.sigCon2,
+        pd.styCon2,
+        pd.supremeTotalCon2,
+        pd.avonCon2,
+        pd.fbCon2,
+        pd.slCon2,
+        pd.matchTotalCon2,
+        pd.asterCon2,
+        pd.asterstCon2,
+        pd.sparkCon2,
+        pd.lighterTotalCon2,
+        
+        pd.bddfOut2,
+        pd.bdfcOut2,
+        pd.bdadOut2,
+        pd.bdTotalOut2,
+        pd.msbOut2,
+        pd.msgOut2,
+        pd.supFmaOut2,
+        pd.supSigOut2,
+        pd.supStyOut2,
+        pd.supTotalOut2,
+        pd.avonOut2,
+        pd.fbOut2,
+        pd.slOut2,
+        pd.matchOut2,
+        pd.asterOut2,
+        pd.asterstOut2,
+        pd.sparkOut2,
+        pd.lighterTotalOut2
+from
+(select  *
+from (select * from v_teritory_all v where 1=1 and v.wing_id like :wingId || '%') v
+Left    Join
+(select  vta.route_id route_id_1,
+         vta.route_name route_name_1,
+        count(distinct c.id) totalConsumer,
+        count(distinct case when qmp.id=1 then qa.consumer_id else null end) bddfOut,
+        count(distinct case when qmp.id=2 then qa.consumer_id else null end) bdfcOut,
+        count(distinct case when qmp.id=94 then qa.consumer_id else null end) bdadOut,
+        count(distinct case when qmp.id in (1,2,94) then qa.consumer_id else null end) bdTotalOut,
+        
+        count(distinct case when qmp.id=3 then qa.consumer_id else null end) msbOut,
+        count(distinct case when qmp.id=95 then qa.consumer_id else null end) msgOut,
+        
+        count(distinct case when qmp.id=98 then qa.consumer_id else null end) supFmaOut,
+        count(distinct case when qmp.id=99 then qa.consumer_id else null end) supSigOut,
+        count(distinct case when qmp.id=100 then qa.consumer_id else null end) supStyOut,
+        count(distinct case when qmp.id in (98,99) then qa.consumer_id else null end) supTotalOut,
+        
+        count(distinct case when qmp.id=103 then qa.consumer_id else null end) avonOut,
+        
+        count(distinct case when qmp.id=48 then qa.consumer_id else null end) fbOut,
+        count(distinct case when qmp.id=49 then qa.consumer_id else null end) slOut,
+        count(distinct case when qmp.id in (48,49) then qa.consumer_id else null end) matchOut,
+        
+        count(distinct case when qmp.id=54 then qa.consumer_id else null end) asterOut,
+        count(distinct case when qmp.id=55 then qa.consumer_id else null end) asterstOut,
+        count(distinct case when qmp.id=101 then qa.consumer_id else null end) sparkOut,
+        count(distinct case when qmp.id in (54,55,101) then qa.consumer_id else null end) lighterTotalOut,
+        
+        round(case when count(distinct c.id) > 0 then count(distinct case when qmp.id=1 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) bddfCon,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qmp.id=2 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) bdfcCon,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qmp.id=94 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) bdadCon,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qmp.id in (1,2,94) then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) bdTotalCon,
+        
+        round(case when count(distinct c.id) > 0 then count(distinct case when qmp.id=3 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) msbCon,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qmp.id=95 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) msbgCon,
+        
+        round(case when count(distinct c.id) > 0 then count(distinct case when qmp.id=98 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) fmCon,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qmp.id=99 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) sigCon,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qmp.id=100 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) styCon,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qmp.id in (98,99) then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) supremeTotalCon,
+        
+        round(case when count(distinct c.id) > 0 then count(distinct case when qmp.id=103 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) avonCon,
+        
+        round(case when count(distinct c.id) > 0 then count(distinct case when qmp.id=48 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) fbCon,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qmp.id=49 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) slCon,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qmp.id in (49,49) then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) matchTotalCon,
+        
+        round(case when count(distinct c.id) > 0 then count(distinct case when qmp.id=54 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) asterCon,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qmp.id=55 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) asterstCon,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qmp.id=101 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) sparkCon,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qmp.id in (54,55,101) then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) lighterTotalCon
+from    (select * from v_teritory_all v where 1=1 and v.wing_id like :wingId || '%') vta
+join    consumer_teritory ct on vta.route_id = ct.teritory_id
+join    consumer c on ct.consumer_id = c.id and status=1
+        join (select * from question_answers where target_date = :targetDate) qa on c.id = qa.consumer_id
+left    join product_record pr on qa.consumer_id = pr.consumer_id
+left    join ques_market_product qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+group   by vta.route_id,vta.route_name
+) bd
+On  v.route_id=bd.route_id_1
+)bd
+FULL JOIN
+(select  vta.route_id route_id2,
+        vta.route_name route_name2,
+        count(distinct c.id) totalConsumer2,
+        count(distinct case when qm.id=1 then qa.consumer_id else null end) bddfOut2,
+        count(distinct case when qm.id=2 then qa.consumer_id else null end) bdfcOut2,
+        count(distinct case when qm.id=94 then qa.consumer_id else null end) bdadOut2,
+        count(distinct case when qm.id in (1,2,94) then qa.consumer_id else null end) bdTotalOut2,
+        
+        count(distinct case when qm.id=3 then qa.consumer_id else null end) msbOut2,
+        count(distinct case when qm.id=95 then qa.consumer_id else null end) msgOut2,
+        
+        count(distinct case when qm.id=98 then qa.consumer_id else null end) supFmaOut2,
+        count(distinct case when qm.id=99 then qa.consumer_id else null end) supSigOut2,
+        count(distinct case when qm.id=100 then qa.consumer_id else null end) supStyOut2,
+        count(distinct case when qm.id in (98,99) then qa.consumer_id else null end) supTotalOut2,
+        
+        count(distinct case when qm.id=103 then qa.consumer_id else null end) avonOut2,
+        
+        count(distinct case when qm.id=48 then qa.consumer_id else null end) fbOut2,
+        count(distinct case when qm.id=49 then qa.consumer_id else null end) slOut2,
+        count(distinct case when qm.id in (48,49) then qa.consumer_id else null end) matchOut2,
+        
+        count(distinct case when qm.id=54 then qa.consumer_id else null end) asterOut2,
+        count(distinct case when qm.id=55 then qa.consumer_id else null end) asterstOut2,
+        count(distinct case when qm.id=101 then qa.consumer_id else null end) sparkOut2,
+        count(distinct case when qm.id in (54,55,101) then qa.consumer_id else null end) lighterTotalOut2,
+        
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id=1 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) bddfCon2,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id=2 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) bdfcCon2,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id=94 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) bdadCon2,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id in (1,2,94) then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) bdTotalCon2,
+        
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id=3 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) msbCon2,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id=95 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) msbgCon2,
+        
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id=98 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) fmCon2,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id=99 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) sigCon2,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id=100 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) styCon2,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id in (98,99) then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) supremeTotalCon2,
+        
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id=96 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) orgCon2,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id=97 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) appCon2,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id in (96,97) then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) arisTotalCon2,
+        
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id=103 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) avonCon2,
+        
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id=48 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) fbCon2,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id=49 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) slCon2,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id in (49,49) then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) matchTotalCon2,
+        
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id=54 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) asterCon2,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id=55 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) asterstCon2,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id=101 then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) sparkCon2,
+        round(case when count(distinct c.id) > 0 then count(distinct case when qm.id in (54,55,101) then qa.consumer_id else null end) / count(distinct c.id) * 100 else 0 end) lighterTotalCon2
+from    (select * from v_teritory_all v where 1=1 and v.wing_id like :wingId || '%') vta
+join    consumer_teritory ct on vta.route_id = ct.teritory_id
+join    consumer c on ct.consumer_id = c.id and status=1
+join    question_answers qa on c.id=qa.consumer_id
+and     target_date = to_date(:targetDate,'DD-MON-YY') + 14
+join    product_record pr on qa.consumer_id=pr.consumer_id
+join    ques_market_product qm on pr.QUES_MARKET_PRODUCT_ID=qm.id
+group   by vta.route_id,vta.route_name
+)pd
+        ON bd.route_id=pd.route_id2
+)r1
+Full Join
+(select  
+        abd.route_id,
+        abd.route_name,
+        abd.aris_outlet,
+        abd.slimCigCon,
+        abd.aris_stock_outlet,
+        abd.onSlimSelling,
+        abd.onSurveyOutlet,
+        apd.aris_outlet2,
+        apd.slimCigCon2,
+        apd.aris_stock_outlet2,
+        apd.onSlimSelling2,
+        apd.onSurveyOutlet2   
+from
+(select  *
+from (select * from v_teritory_all v where 1=1 and v.wing_id like :wingId || '%') v
+Left    Join
+(
+select  
+        v.route_id route_id_1,v.route_name route_name_1,
+        count(distinct case when qmp.id in (96,97) then pr.consumer_id else null end)aris_outlet,
+        count(distinct case when qmp.id in (96,97) then qa.consumer_id else null end) slimCigCon,
+        count(distinct case when qmp.id in (96,97) and pr.product_stock > 0 then pr.consumer_id else null end) aris_stock_outlet,
+        round(case when count(distinct case when qmp.id in (96,97) then qa.consumer_id else null end) > 0 then (count(distinct case when qmp.id in (96,97) and pr.product_stock > 0 then pr.consumer_id else null end) * 100) /count(distinct case when qmp.id in (96,97) then qa.consumer_id else null end) else 0 end) onSlimSelling,
+        round(case when count(distinct case when qmp.id in (96,97) then pr.consumer_id else null end) > 0 then (count(distinct case when qmp.id in (96,97) and pr.product_stock > 0 then pr.consumer_id else null end) * 100) /count(distinct case when qmp.id in (96,97) then pr.consumer_id else null end) else 0 end) onSurveyOutlet
+from    (select * from v_teritory_all v where 1=1 and v.wing_id like :wingId || '%') v
+join    consumer_teritory ct on ct.teritory_id=v.route_id
+join    consumer c on ct.consumer_id=c.id and c.status=1
+join    product_record pr on c.id=pr.consumer_id
+and     pr.target_date= :targetDate
+join    ques_market_product qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+left    join (select  distinct qao.id slim_cig_ans_id,q.consumer_id
+            from    question_answers q
+            join    product_record pr on q.consumer_id=pr.consumer_id
+            and     pr.target_date= :targetDate
+            join    question_opts_map qom on q.QUESTION_OPTION_MAP_ID=qom.id and q.question_id=12
+            join    ques_activity_opts qao on qom.question_options_id=qao.id and qao.id=28
+        )qa on pr.consumer_id=qa.consumer_id
+left    join own_market_product_map ompm on qmp.id=ompm.market_product_id
+left    join territory_products tp on ompm.own_product_id=tp.product_id
+group   by v.route_id,v.route_name
+)abd
+on v.route_id=abd.route_id_1
+)abd
+FULL JOIN
+(select  
+        v.route_id,v.route_name,
+        count(distinct case when qmp.id in (96,97) then pr.consumer_id else null end)aris_outlet2,
+        count(distinct case when qmp.id in (96,97) and qao.id=28 then qa.consumer_id else null end) slimCigCon2,
+        count(distinct case when qmp.id in (96,97) and pr.product_stock > 0 then pr.consumer_id else null end) aris_stock_outlet2,
+        round(case when count(distinct case when qmp.id in (96,97) and qao.id=28 then qa.consumer_id else null end) > 0 then (count(distinct case when qmp.id in (96,97) and pr.product_stock > 0 then pr.consumer_id else null end) * 100) /count(distinct case when qmp.id in (96,97) and qao.id=28 then qa.consumer_id else null end) else 0 end) onSlimSelling2,
+        round(case when count(distinct case when qmp.id in (96,97) then pr.consumer_id else null end) > 0 then (count(distinct case when qmp.id in (96,97) and pr.product_stock > 0 then pr.consumer_id else null end) * 100) /count(distinct case when qmp.id in (96,97) then pr.consumer_id else null end) else 0 end) onSurveyOutlet2
+from    (select * from v_teritory_all v where 1=1 and v.wing_id like :wingId || '%') v
+join    consumer_teritory ct on ct.teritory_id=v.route_id
+join    consumer c on ct.consumer_id=c.id and c.status=1
+join    (select * from product_record 
+                where route_id in (select distinct route_id from product_record where target_date=to_date(:targetDate,'DD-MON-YY')+14)
+                and target_date = to_date(:targetDate,'DD-MON-YY') +14
+        ) pr on c.id=pr.consumer_id
+join    question_answers qa on pr.consumer_id=qa.consumer_id
+join    ques_market_product qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+left    join question_opts_map qom on qa.QUESTION_OPTION_MAP_ID=qom.id and qa.question_id=12
+left    join ques_activity_opts qao on qom.question_options_id=qao.id and qao.id=28
+left    join own_market_product_map ompm on qmp.id=ompm.market_product_id
+left    join territory_products tp on ompm.own_product_id=tp.product_id
+group   by v.route_id,v.route_name
+)apd
+ON abd.route_id=apd.route_id
+)aris
+on r1.route_id=aris.route_id
+Full Join
+(Select  v.route_id,
+        v.route_name,
+        bddfSalesCal ,
+        msbSalesCal,
+        sfmSalesCal,
+        ssiSalesCal,
+        supAnySalesCal,
+        arisSalesCal,
+        derbySalesCal,
+        royalSalesCal,
+        starSalesCal,
+        avonSalesCal,
+        ldSalesCal,
+        navySalesCal,
+        camelSalesCal,
+        consumer_count,
+        bddfSales ,
+        msbSales,
+        sfmSales,
+        ssiSales,
+        supAnySales,
+        arisSales,
+        derbySales,
+        royalSales,
+        starSales,
+        avonSales,
+        ldSales,
+        navySales,
+        camelSales
+from    (select * from v_teritory_all v where 1=1 and v.wing_id like :wingId || '%') v
+LEFT    JOIN
+(Select st1.route_id route_id_1,
+        st1.route_name route_name_1,
+        (bddfStock1 + bddfWhl2) - bddfStock2 bddfSalesCal ,
+        (msbStock1 + msbWhl2) - msbStock2 msbSalesCal,
+        (sfmStock1 + sfmWhl2) - sfmStock2 sfmSalesCal,
+        (ssiStock1 + ssiWhl2) - ssiStock2 ssiSalesCal,
+        (supAnyStock1 + supAnyWhl2) - supAnyStock2 supAnySalesCal,
+        (arisStock1 + arisWhl2) - arisStock2 arisSalesCal,
+        (derbyStock1 + derbyWhl2) - derbyStock2 derbySalesCal,
+        (royalStock1 + royalWhl2) - royalStock2 royalSalesCal,
+        (starStock1 + starWhl2) - starStock2 starSalesCal,
+        (avonStock1 + avonWhl2) - avonStock2 avonSalesCal,
+        (ldStock1 + ldWhl2) - ldStock2 ldSalesCal,
+        (navyStock1 + navyWhl2) - navyStock2 navySalesCal,
+        (camelStock1 + camelWhl2) - camelStock2 camelSalesCal,
+        consumer_count,
+        round(case when consumer_count > 0 then ((bddfStock1 + bddfWhl2) - bddfStock2 ) / consumer_count end) bddfSales ,
+        round(case when consumer_count > 0 then ((msbStock1 + msbWhl2) - msbStock2 ) / consumer_count end) msbSales,
+        round(case when consumer_count > 0 then ((sfmStock1 + sfmWhl2) - sfmStock2 ) / consumer_count end) sfmSales,
+        round(case when consumer_count > 0 then ((ssiStock1 + ssiWhl2) - ssiStock2 ) / consumer_count end) ssiSales,
+        round(case when consumer_count > 0 then ((supAnyStock1 + supAnyWhl2) - supAnyStock2 ) / consumer_count end) supAnySales,
+        round(case when consumer_count > 0 then ((arisStock1 + arisWhl2) - arisStock2 ) / consumer_count end) arisSales,
+        round(case when consumer_count > 0 then ((derbyStock1 + derbyWhl2) - derbyStock2 ) / consumer_count end) derbySales,
+        round(case when consumer_count > 0 then ((royalStock1 + royalWhl2) - royalStock2 ) / consumer_count end) royalSales,
+        round(case when consumer_count > 0 then ((starStock1 + starWhl2) - starStock2 ) / consumer_count end) starSales,
+        round(case when consumer_count > 0 then ((avonStock1 + avonWhl2) - avonStock2 ) / consumer_count end) avonSales,
+        round(case when consumer_count > 0 then ((ldStock1 + ldWhl2) - ldStock2 ) / consumer_count end) ldSales,
+        round(case when consumer_count > 0 then ((navyStock1 + navyWhl2) - navyStock2 ) / consumer_count end) navySales,
+        round(case when consumer_count > 0 then ((camelStock1 + camelWhl2) - camelStock2 ) / consumer_count end) camelSales
+from
+(Select  
+        vta.route_id,
+        vta.route_name,
+        count(distinct ct.consumer_id) consumer_count,
+        NVL(SUM(CASE WHEN p.id = 1 THEN pd.PRODUCT_STOCK END),0) bddfStock1,
+        NVL(SUM(CASE WHEN p.id = 3 THEN pd.PRODUCT_STOCK END),0) msbStock1,
+        NVL(SUM(CASE WHEN p.id = 98 THEN pd.PRODUCT_STOCK END),0) sfmStock1,
+        NVL(SUM(CASE WHEN p.id = 99 THEN pd.PRODUCT_STOCK END),0) ssiStock1,
+        NVL(SUM(CASE WHEN p.id IN (98,99) THEN pd.PRODUCT_STOCK END),0) supAnyStock1,
+        NVL(SUM(CASE WHEN p.id IN (96,97) THEN pd.PRODUCT_STOCK END),0) arisStock1,
+        NVL(SUM(CASE WHEN p.id = 5 THEN pd.PRODUCT_STOCK END),0) derbyStock1,
+        NVL(SUM(CASE WHEN p.id = 8 THEN pd.PRODUCT_STOCK END),0) royalStock1,
+        NVL(SUM(CASE WHEN p.id = 47 THEN pd.PRODUCT_STOCK END),0) starStock1,
+        NVL(SUM(CASE WHEN p.id = 103 THEN pd.PRODUCT_STOCK END),0) avonStock1,
+        NVL(SUM(CASE WHEN p.id = 9 THEN pd.PRODUCT_STOCK END),0) ldStock1,
+        NVL(SUM(CASE WHEN p.id = 105 THEN pd.PRODUCT_STOCK END),0) navyStock1,
+        NVL(SUM(CASE WHEN p.id = 104 THEN pd.PRODUCT_STOCK END),0) camelStock1
+from    (select * from v_teritory_all v where 1=1 and v.wing_id like :wingId || '%') vta
+join    consumer_teritory ct on ct.teritory_id=vta.route_id
+join    product_record pd on ct.consumer_id=pd.consumer_id
+join    ques_market_product p on p.id=pd.ques_market_product_id
+where   pd.target_date = TO_DATE(:targetDate, 'DD-MON-YY')
+group   by vta.route_id,vta.route_name
+)st1
+JOIN
+(Select  
+        vta.route_id,
+        vta.route_name,
+        NVL(SUM(CASE WHEN p.id = 1 THEN pd.PRODUCT_STOCK END),0) bddfStock2,
+        NVL(SUM(CASE WHEN p.id = 1 THEN (pd.whole_sale+pd.company_lifting) END),0) bddfWhl2,
+        NVL(SUM(CASE WHEN p.id = 3 THEN pd.PRODUCT_STOCK END),0) msbStock2,
+        NVL(SUM(CASE WHEN p.id = 3 THEN (pd.whole_sale+pd.company_lifting) END),0) msbWhl2,
+        NVL(SUM(CASE WHEN p.id = 98 THEN pd.PRODUCT_STOCK END),0) sfmStock2,
+        NVL(SUM(CASE WHEN p.id = 98 THEN (pd.whole_sale+pd.company_lifting) END),0) sfmWhl2,
+        NVL(SUM(CASE WHEN p.id = 99 THEN pd.PRODUCT_STOCK END),0) ssiStock2,
+        NVL(SUM(CASE WHEN p.id = 99 THEN (pd.whole_sale+pd.company_lifting) END),0) ssiWhl2,
+        NVL(SUM(CASE WHEN p.id IN (98,99) THEN pd.PRODUCT_STOCK END),0) supAnyStock2,
+        NVL(SUM(CASE WHEN p.id IN (98,99) THEN (pd.whole_sale+pd.company_lifting) END),0) supAnyWhl2,
+        NVL(SUM(CASE WHEN p.id IN (96,97) THEN pd.PRODUCT_STOCK END),0) arisStock2,
+        NVL(SUM(CASE WHEN p.id IN (96,97) THEN (pd.whole_sale+pd.company_lifting) END),0) arisWhl2,
+        NVL(SUM(CASE WHEN p.id = 5 THEN pd.PRODUCT_STOCK END),0) derbyStock2,
+        NVL(SUM(CASE WHEN p.id = 5 THEN (pd.whole_sale+pd.company_lifting) END),0) derbyWhl2,
+        NVL(SUM(CASE WHEN p.id = 8 THEN pd.PRODUCT_STOCK END),0) royalStock2,
+        NVL(SUM(CASE WHEN p.id = 8 THEN (pd.whole_sale+pd.company_lifting) END),0) royalWhl2,
+        NVL(SUM(CASE WHEN p.id = 47 THEN pd.PRODUCT_STOCK END),0) starStock2,
+        NVL(SUM(CASE WHEN p.id = 47 THEN (pd.whole_sale+pd.company_lifting) END),0) starWhl2,
+        NVL(SUM(CASE WHEN p.id = 103 THEN pd.PRODUCT_STOCK END),0) avonStock2,
+        NVL(SUM(CASE WHEN p.id = 103 THEN (pd.whole_sale+pd.company_lifting) END),0) avonWhl2,
+        NVL(SUM(CASE WHEN p.id = 9 THEN pd.PRODUCT_STOCK END),0) ldStock2,
+        NVL(SUM(CASE WHEN p.id = 9 THEN (pd.whole_sale+pd.company_lifting) END),0) ldWhl2,
+        NVL(SUM(CASE WHEN p.id = 105 THEN pd.PRODUCT_STOCK END),0) navyStock2,
+        NVL(SUM(CASE WHEN p.id = 105 THEN (pd.whole_sale+pd.company_lifting) END),0) navyWhl2,
+        NVL(SUM(CASE WHEN p.id = 104 THEN pd.PRODUCT_STOCK END),0) camelStock2,
+        NVL(SUM(CASE WHEN p.id = 104 THEN (pd.whole_sale+pd.company_lifting) END),0) camelWhl2
+from    (select * from v_teritory_all v where 1=1 and v.wing_id like :wingId || '%') vta
+join    consumer_teritory ct on ct.teritory_id=vta.route_id
+join    product_record pd on ct.consumer_id=pd.consumer_id
+join    ques_market_product p on p.id=pd.ques_market_product_id
+where   pd.target_date = TO_DATE(:targetDate, 'DD-MON-YY') + 14
+group   by vta.route_id,vta.route_name
+)st2
+ON  st1.route_id=st2.route_id
+)pd ON v.route_id=pd.route_id_1
+)r2
+On r1.route_id = r2.route_id
+order by r1.wing_id,r1.teritory_id,r1.route_id

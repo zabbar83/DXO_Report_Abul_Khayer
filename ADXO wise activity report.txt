@@ -1,0 +1,108 @@
+SELECT
+                    DISTINCT pur.target_date AS targetDate,
+                    vta.wing_id AS wingId,
+                    vta.wing_name AS wingName,
+                    vta.division_id AS divisionId,
+                    vta.division_name AS divisionName,
+                    vta.teritory_id AS teritoryId,
+                    vta.teritory_name AS teritoryName,
+                    dxo.user_id dxoId,
+                    dxo.user_name dxoName,
+                    bt.bruser_id AS adxoId,
+                    br.name AS adxoName,
+                    br.CONTACT_NUMBER AS adxoContactNo,
+                    bc.CUSTOMER_NAME AS consumerName,
+                    bc.AGE AS consumerAge,
+                    bct.CONTACT_NUMBER AS consumerNumber,
+                    pur.DAILY_STICK_CONSUMPTION AS dailyStickConsumption,
+                    cwa.relation AS earner,
+                    pce_cwe.PROGRAM AS cweEducation,
+                    pcp_cwe.profession AS cweProfession,
+                    pce_res.program AS resEducation,
+                    pcp_res.profession AS resProfession,
+                    dp_prev.name AS previousBrand,
+                    dp_now.name AS presentBrand,
+                    ocb.occasional_brand AS occasionalBrand,
+                    nc.nonconbrand1 AS nonConBrand1,
+                    nc.reason1 AS reason1,
+                    nc.remarks1 AS remarks1,
+                    nc.nonconbrand2 AS nonConBrand2,
+                    nc.reason2 AS reason2,
+                    nc.remarks2 AS remarks2,
+                    nc.nonconbrand3 AS nonConBrand3,
+                    nc.reason3 AS reason3,
+                    nc.remarks3 AS remarks3,
+                    nc.nonconbrand4 AS nonConBrand4,
+                    nc.reason4 AS reason4,
+                    nc.remarks4 AS remarks4
+                
+                FROM appdxo.product_usage_record pur
+                JOIN appdxo.bractivity_consumer bc ON bc.id = pur.PROD_CONSUMER_ID
+                JOIN appdxo.bractivity_contact bct ON bc.BR_ACTIVITY_CONTACT_ID = bct.id
+                JOIN appdxo.bruser_teritory bt ON bt.bruser_id = pur.added_by AND SYSDATE BETWEEN bt.ed AND bt.td
+                JOIN appdxo.bruser bu on bt.bruser_id=bu.user_id
+                JOIN (select  user_id,user_name,teritory_id
+                            from    users u
+                            join    users_roles ur on u.user_id=ur.users_user_id
+                            and     ur.roles_id=7
+                      )dxo on bu.teritory_id=dxo.teritory_id
+                JOIN appdxo.v_teritory_all vta ON vta.teritory_id = bt.teritory_id
+                JOIN appdxo.brand_representative br ON br.br_user_user_id = bt.bruser_id
+                LEFT JOIN appdxo.br_activity_cons_info baci ON pur.PROD_CONSUMER_ID = baci.BR_ACTIVITY_CONSUMER_ID
+                LEFT JOIN appdxo.chief_wage_earner cwa ON cwa.id = baci.earner_id
+                LEFT JOIN appdxo.product_consumer_edu pce_cwe ON pce_cwe.id = baci.cwe_education_id
+                LEFT JOIN appdxo.product_consumer_edu pce_res ON pce_res.id = baci.RES_EDUCATION_ID
+                LEFT JOIN appdxo.product_consumer_prof pcp_cwe ON pcp_cwe.id = baci.CWE_PROFESSION_ID
+                LEFT JOIN appdxo.product_consumer_prof pcp_res ON pcp_res.id = baci.res_PROFESSION_ID
+                LEFT JOIN appdxo.product_cons_before pcb ON pcb.PROD_USE_REC_ID = pur.ID
+                LEFT JOIN appdxo.product_cons_now pcn ON pcn.PROD_USE_REC_ID = pur.ID
+                LEFT JOIN appdxo.dxo_product dp_prev ON dp_prev.id = pcb.PREV_PROD_ID
+                LEFT JOIN appdxo.dxo_product dp_now ON dp_now.id = pcn.PRESENT_PRODUCT_ID
+                LEFT JOIN (
+                    SELECT
+                        pur.PROD_CONSUMER_ID,
+                        LISTAGG(dp.name, ', ') WITHIN GROUP (ORDER BY dp.name) AS occasional_brand
+                    FROM appdxo.product_usage_record pur
+                    LEFT JOIN appdxo.product_cons_occ pco ON pur.ID = pco.PROD_USE_REC_ID
+                    LEFT JOIN appdxo.dxo_product dp ON dp.id = pco.OCCASIONAL_PROD_ID
+                    WHERE pur.target_date BETWEEN :fromDate  AND :toDate
+                    GROUP BY pur.PROD_CONSUMER_ID
+                ) ocb ON pur.PROD_CONSUMER_ID = ocb.PROD_CONSUMER_ID
+                LEFT JOIN (
+                    SELECT
+                        PROD_CONSUMER_ID,
+                        MAX(CASE WHEN rn = 1 THEN brand END) AS nonconbrand1,
+                        MAX(CASE WHEN rn = 1 THEN reason END) AS reason1,
+                        MAX(CASE WHEN rn = 1 THEN remarks END) AS remarks1,
+                        MAX(CASE WHEN rn = 2 THEN brand END) AS nonconbrand2,
+                        MAX(CASE WHEN rn = 2 THEN reason END) AS reason2,
+                        MAX(CASE WHEN rn = 2 THEN remarks END) AS remarks2,
+                        MAX(CASE WHEN rn = 3 THEN brand END) AS nonconbrand3,
+                        MAX(CASE WHEN rn = 3 THEN reason END) AS reason3,
+                        MAX(CASE WHEN rn = 3 THEN remarks END) AS remarks3,
+                        MAX(CASE WHEN rn = 4 THEN brand END) AS nonconbrand4,
+                        MAX(CASE WHEN rn = 4 THEN reason END) AS reason4,
+                        MAX(CASE WHEN rn = 4 THEN remarks END) AS remarks4
+                    FROM (
+                        SELECT
+                            pur.PROD_CONSUMER_ID,
+                            dp.name AS brand,
+                            ncr.reason,
+                            pncr.REMARKS,
+                            ROW_NUMBER() OVER (
+                                PARTITION BY pur.PROD_CONSUMER_ID
+                                ORDER BY dp.name
+                            ) AS rn
+                        FROM
+                            appdxo.product_usage_record pur
+                        LEFT JOIN appdxo.product_non_cons_reasons pncr ON pncr.PROD_USE_REC_ID = pur.id
+                        LEFT JOIN appdxo.not_con_reasons ncr ON ncr.ID = pncr.NOT_CONS_REASON_ID
+                        LEFT JOIN appdxo.dxo_product dp ON dp.id = pncr.OCCASIONAL_PROD_ID
+                        WHERE
+                            pur.target_date BETWEEN :fromDate  AND :toDate
+                    )
+                    GROUP BY PROD_CONSUMER_ID
+                ) nc ON pur.PROD_CONSUMER_ID = nc.PROD_CONSUMER_ID
+                WHERE pur.target_date BETWEEN :fromDate  AND :toDate
+                
+                order by pur.target_date ,vta.wing_id , vta.division_id

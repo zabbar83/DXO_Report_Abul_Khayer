@@ -1,0 +1,15 @@
+select  
+        vta.wing_id wingId,
+        vta.wing_name wingName,
+        vta.teritory_id teritoryId,
+        vta.teritory_Name teritoryName,
+        count(distinct c.id) totalConsumer
+from    (select * from v_teritory_all v where v.wing_id = 6) vta
+join    consumer_teritory ct on vta.route_id = ct.teritory_id
+join    consumer c on ct.consumer_id = c.id and status=1
+join    (select * from question_answers where target_date = :targetDate) qa on c.id = qa.consumer_id
+left    join product_record pr on qa.consumer_id = pr.consumer_id
+left    join ques_market_product qmp on pr.QUES_MARKET_PRODUCT_ID=qmp.id
+and     qmp.id  in (96,97)
+group   by vta.wing_id,vta.wing_name,vta.teritory_id,vta.teritory_Name
+order  by vta.teritory_id
