@@ -1,0 +1,64 @@
+SELECT distinct pd.target_date       AS surveyDate,
+                vta.wing_id             wingId,
+                vta.wing_name           wingName,
+                vta.division_id      AS divisionId,
+                vta.division_name    AS divisionName,
+                vta.teritory_id      AS teritoryId,
+                vta.teritory_name    AS teritoryName,
+                vta.zone_id          AS zoneId,
+                vta.zone_name        AS zoneName,
+                vta.route_id         AS routeId,
+                vta.route_name       AS routeName,
+                ab.address_line1     AS clusterName,
+                pd.br_user_id        AS brUserId,
+                br.name              AS name,
+                br.contact_number    AS contactNumber,
+                c.id                 AS consumerId,
+                c.consumer_code      AS consumerCode,
+                c.trade_license_name AS tradeLicenseName,
+                c.mobile_no          AS mobileNo,
+                c.lat                   latitude,
+                c.lng                   longitude,
+                qn.channelType1,
+                qn.frequency3,
+                qn.pposm4,
+                qn.isAstha6,
+                qn.achiever7,
+                qn.asthaGift8,
+                qn.memoCompany10,
+                qn.sellProd12,
+                ab.address_line1
+
+from appdxo.v_teritory_all vta
+         join appdxo.consumer_teritory ct on ct.teritory_id = vta.route_id
+    AND (:territoryId is not null or vta.teritory_id = :territoryId)
+    AND (:territoryId is not null or vta.division_id = :territoryId)
+         join appdxo.consumer c on c.id = ct.consumer_id
+         join appdxo.consumer_address ca on ca.consumer_id = ct.consumer_id
+         join appdxo.address_book ab on ab.id = ca.address_id
+         join appdxo.product_record pd on ct.consumer_id = pd.consumer_id
+    and pd.target_date = :targetDate
+         join appdxo.BRAND_REPRESENTATIVE br on pd.br_user_id = br.BR_USER_USER_ID
+         join appdxo.ques_market_product p on p.id = pd.ques_market_product_id
+         join appdxo.consumer_address ca on ca.consumer_id = c.id
+         join appdxo.address_book ab on ab.id = ca.address_id
+         join (select consumer_id,
+                      max(case when question_id = 1 then ans end)  channelType1,
+                      max(case when question_id = 3 then ans end)  frequency3,
+                      max(case when question_id = 4 then ans end)  pposm4,
+                      max(case when question_id = 6 then ans end)  isAstha6,
+                      max(case when question_id = 7 then ans end)  achiever7,
+                      max(case when question_id = 8 then ans end)  asthaGift8,
+                      max(case when question_id = 10 then ans end) memoCompany10,
+                      max(case when question_id = 12 then ans end) sellProd12
+               from (select distinct qa.consumer_id,
+                                     qa.question_id,
+                                     listagg(qao.QUESTION_OPTION, ', ')
+                                             within group (order by qa.consumer_id, qa.question_id ) ans
+                     from appdxo.question_answers qa
+                              join appdxo.question_opts_map qom on qom.ID = qa.question_option_map_id
+                              join appdxo.ques_activity_opts qao on qao.id = qom.QUESTION_OPTIONS_ID
+                     where qa.target_date = :targetDate
+                     group by qa.consumer_id, qa.question_id
+                     order by qa.consumer_id)
+               group by consumer_id) qn on qn.consumer_id = ct.consumer_id

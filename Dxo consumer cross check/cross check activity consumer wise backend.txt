@@ -1,29 +1,29 @@
-SELECT DISTINCT pur.target_date             AS targetDate,
-                vta.wing_id                 AS wingId,
-                vta.wing_name               AS wingName,
-                vta.division_id             AS divisionId,
-                vta.division_name           AS divisionName,
-                vta.teritory_id             AS teritoryId,
-                vta.teritory_name           AS teritoryName,
-                dxo.user_id                    dxoId,
-                dxo.user_name                  dxoName,
-                bt.bruser_id                AS adxoId,
-                br.name                     AS adxoName,
-                br.CONTACT_NUMBER           AS adxoContactNo,
-                bc.CUSTOMER_NAME            AS consumerName,
-                bc.AGE                      AS consumerAge,
-                bct.CONTACT_NUMBER          AS consumerNumber,
-                pur.DAILY_STICK_CONSUMPTION AS dailyStickConsumption,
-                cwa.relation                AS earner,
-                pce_cwe.PROGRAM             AS cweEducation,
-                pcp_cwe.profession          AS cweProfession,
-                pce_res.program             AS resEducation,
-                pcp_res.profession          AS resProfession,
-                dp_prev.name                AS previousBrand,
-                dp_now.name                 AS presentBrand,
-                ocb.occasional_brand        AS occasionalBrand,
-                bc.ID                       AS brActConsumerId,
-                to_char(pur.add_date_time,'HH12:MI AM') as activityTime,
+SELECT DISTINCT pur.target_date                          AS targetDate,
+                vta.wing_id                              AS wingId,
+                vta.wing_name                            AS wingName,
+                vta.division_id                          AS divisionId,
+                vta.division_name                        AS divisionName,
+                vta.teritory_id                          AS teritoryId,
+                vta.teritory_name                        AS teritoryName,
+                dxo.user_id                                 dxoId,
+                dxo.user_name                               dxoName,
+                bt.bruser_id                             AS adxoId,
+                br.name                                  AS adxoName,
+                br.CONTACT_NUMBER                        AS adxoContactNo,
+                bc.CUSTOMER_NAME                         AS consumerName,
+                bc.AGE                                   AS consumerAge,
+                bct.CONTACT_NUMBER                       AS consumerNumber,
+                pur.DAILY_STICK_CONSUMPTION              AS dailyStickConsumption,
+                cwa.relation                             AS earner,
+                pce_cwe.PROGRAM                          AS cweEducation,
+                pcp_cwe.profession                       AS cweProfession,
+                pce_res.program                          AS resEducation,
+                pcp_res.profession                       AS resProfession,
+                dp_prev.name                             AS previousBrand,
+                dp_now.name                              AS presentBrand,
+                ocb.occasional_brand                     AS occasionalBrand,
+                bc.ID                                    AS brActConsumerId,
+                to_char(pur.add_date_time, 'HH12:MI AM') as activityTime,
                 nc.knownBrand
 
 FROM appdxo.product_usage_record pur
@@ -36,7 +36,8 @@ FROM appdxo.product_usage_record pur
                         join users_roles ur on u.user_id = ur.users_user_id
                    and ur.roles_id = 7) dxo on bu.teritory_id = dxo.teritory_id
          JOIN appdxo.v_teritory_all vta ON vta.teritory_id = bt.teritory_id
-    AND vta.teritory_id = :territoryId
+    AND (:territoryId is not null or vta.teritory_id = :territoryId)
+    AND (:territoryId is not null or vta.division_id = :territoryId)
          JOIN appdxo.brand_representative br ON br.br_user_user_id = bt.bruser_id
          LEFT JOIN appdxo.br_activity_cons_info baci ON pur.PROD_CONSUMER_ID = baci.BR_ACTIVITY_CONSUMER_ID
          LEFT JOIN appdxo.chief_wage_earner cwa ON cwa.id = baci.earner_id
