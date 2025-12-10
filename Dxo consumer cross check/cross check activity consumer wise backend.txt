@@ -36,8 +36,7 @@ FROM appdxo.product_usage_record pur
                         join users_roles ur on u.user_id = ur.users_user_id
                    and ur.roles_id = 7) dxo on bu.teritory_id = dxo.teritory_id
          JOIN appdxo.v_teritory_all vta ON vta.teritory_id = bt.teritory_id
-    AND (:territoryId is not null or vta.teritory_id = :territoryId)
-    AND (:territoryId is not null or vta.division_id = :territoryId)
+    AND (vta.teritory_id = :territoryId or vta.division_id = :territoryId)
          JOIN appdxo.brand_representative br ON br.br_user_user_id = bt.bruser_id
          LEFT JOIN appdxo.br_activity_cons_info baci ON pur.PROD_CONSUMER_ID = baci.BR_ACTIVITY_CONSUMER_ID
          LEFT JOIN appdxo.chief_wage_earner cwa ON cwa.id = baci.earner_id

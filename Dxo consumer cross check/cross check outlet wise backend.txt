@@ -31,8 +31,7 @@ SELECT distinct pd.target_date       AS surveyDate,
 
 from appdxo.v_teritory_all vta
          join appdxo.consumer_teritory ct on ct.teritory_id = vta.route_id
-    AND (:territoryId is not null or vta.teritory_id = :territoryId)
-    AND (:territoryId is not null or vta.division_id = :territoryId)
+    AND (vta.teritory_id = :territoryId or vta.division_id = :territoryId)
          join appdxo.consumer c on c.id = ct.consumer_id
          join appdxo.consumer_address ca on ca.consumer_id = ct.consumer_id
          join appdxo.address_book ab on ab.id = ca.address_id
