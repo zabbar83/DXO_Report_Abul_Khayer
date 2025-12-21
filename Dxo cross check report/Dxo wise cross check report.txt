@@ -67,8 +67,13 @@ LEFT    JOIN
                         dxo_id,
                         u.teritory_id,
                         6 onTheJobTar,
-                        count(cons_act_id) activity
-                from    CONS_ON_THE_JOB_TRAIN cj
+                        count(con_out_id) activity
+                from    (select  add_date,dxo_id,cons_act_id con_out_id
+                            from    CONS_ON_THE_JOB_TRAIN
+                            union   all
+                            select  add_date,dxo_id,outlet_id con_out_id
+                            from    OUT_ON_THE_JOB_TRAIN
+                        ) cj
                 join    users u on cj.dxo_id=u.user_id
                 where   add_date= :targetDate
                 and     (:territoryId is null or u.teritory_id=:territoryId)

@@ -24,7 +24,7 @@ from
                 from    (select distinct division_id,division_name from v_teritory_all
                          where 1=1 and (:divisionId is null or division_id=:divisionId)) v
                 join    users u on v.division_id=u.teritory_id
-                join    emp_info ei on u.user_id=ei.users_id
+                left join    emp_info ei on u.user_id=ei.users_id
                 join    users_roles ur on u.user_id=ur.users_user_id
                 join    role r on ur.roles_id=r.id
                 and     r.id=6
@@ -67,8 +67,13 @@ LEFT    JOIN
                         ddxo_id,
                         u.teritory_id division_id,
                         5 onTheJobTar,
-                        count(cons_act_id) activity
-                from    CONS_ON_THE_JOB_TRAIN cj
+                        count(con_out_id) activity
+                from    (select  add_date,ddxo_id,cons_act_id con_out_id
+                            from    CONS_ON_THE_JOB_TRAIN
+                            union   all
+                            select  add_date,ddxo_id,outlet_id con_out_id
+                            from    OUT_ON_THE_JOB_TRAIN
+                         ) cj
                 join    users u on cj.ddxo_id=u.user_id
                 where   add_date= :targetDate
                 and     (:divisionId is null or u.teritory_id=:divisionId)
