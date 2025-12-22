@@ -7,13 +7,17 @@ select
         NVL(t2.total_cross_check,0) acheivement,
         NVL(t2.yes,0)yes,
         NVL(t2.no,0)no,
+        NVL(t2.yesCount,0) yesCount,
+        NVL(t2.noCount,0) noCount,
         NVL(t2.correction,0)correction,
         NVL(t3.onTheJobTar,0)onTheJobTar,
         NVL(t3.activity,0)activity,
         NVL(t4.crossCheckTarSur,0)crossCheckTarSur,
         NVL(t4.total_cross_check_sur,0)acheivementSur,
         NVL(t4.yes,0)yesSur,
-        NVL(t4.no,0)noSur
+        NVL(t4.no,0)noSur,
+        NVL(t4.yesCount,0) yesCountSur,
+        NVL(t4.noCount,0) noCountSur
 from
         (
                 select   
@@ -38,7 +42,9 @@ LEFT    JOIN
                         count(outlet_id) total_cross_check,
                         sum(case when yes=9 then 1 else 0 end)yes,
                         sum(case when no > 0 then 1 else 0 end)no,
-                        sum(case when no > 0 then 1 else 0 end) correction
+                        sum(yes) yesCount,
+                        sum(no) noCount,
+                        sum(b.ans_count) correction
                 from    (select     checked_by,
                                     teritory_id,
                                     role_id,
@@ -47,19 +53,25 @@ LEFT    JOIN
                                     count(case when ans='no' then 1 else null end) no
                             from 
                                         (select  
-                                                        checked_by,
+                                                        coa.checked_by,
                                                         u.teritory_id,
-                                                        role_id,
-                                                        outlet_id,
-                                                        case when option_id = 1 then 'yes' else 'no' end ans
+                                                        coa.role_id,
+                                                        coa.outlet_id,
+                                                        case when coa.option_id = 1 then 'yes' else 'no' end ans
                                                 from    CC_OUT_ANSWERS coa
                                                 join    users u on coa.checked_by=u.user_id
                                                 where   coa.cross_check_date= :targetDate
                                                 and     (:territoryId is null or u.teritory_id=:territoryId)
-                                                and     role_id=7
+                                                and     coa.role_id=7
                                         )
                             group   by checked_by,teritory_id,role_id,outlet_id
-                                    )
+                                    )a
+                                    left join (select  consumer_id,count(distinct question_id) ans_count
+                                                    from    CC_OUT_ACT_FIRST_UP_ANS coaf
+                                                    where   coaf.cross_check_date= :targetDate
+                                                    and     coaf.role_id=7
+                                                    group   by consumer_id
+                                                )b on a.outlet_id=b.consumer_id
                 group   by checked_by,teritory_id,role_id
         )t2 ON t1.teritory_id=t2.teritory_id
 LEFT    JOIN 
@@ -87,7 +99,9 @@ LEFT    JOIN
                         4 crossCheckTarSur,
                         count(br_activity_consumer_id) total_cross_check_sur,
                         sum(case when yes=9 then 1 else 0 end)yes,
-                        sum(case when no > 0 then 1 else 0 end)no
+                        sum(case when no > 0 then 1 else 0 end)no,
+                        sum(yes) yesCount,
+                        sum(no) noCount
                 from    (select     checked_by,
                                     teritory_id,
                                     role_by,
