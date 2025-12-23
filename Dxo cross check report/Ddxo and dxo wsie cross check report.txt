@@ -1,0 +1,126 @@
+select  
+        t1.name name,
+        t1.designation designation,
+        t1.teritory_id teritoryId,
+        t1.teritory_name teritoryName,
+        NVL(t1.crossCheckTar,0) crossCheckTar,
+        NVL(t2.total_cross_check,0) acheivement,
+        NVL(t2.yes,0)yes,
+        NVL(t2.no,0)no,
+        NVL(t2.yesCount,0) yesCount,
+        NVL(t2.noCount,0) noCount,
+        NVL(t2.correction,0)correction,
+        NVL(t1.onTheJobTar,0)onTheJobTar,
+        NVL(t3.activity,0)activity,
+        NVL(t1.crossCheckTarSur,0)crossCheckTarSur,
+        NVL(t4.total_cross_check_sur,0)acheivementSur,
+        NVL(t4.yes,0)yesSur,
+        NVL(t4.no,0)noSur,
+        NVL(t4.yesCount,0) yesCountSur,
+        NVL(t4.noCount,0) noCountSur
+from
+        (
+                            select  ei.emp_name name,
+                    r.role designation,
+                    td.id teritory_id,
+                    td.teritory_name,
+                    case when r.id=7 then 16 else 10 end crossCheckTar,
+                    case when r.id=7 then 6 else 5 end onTheJobTar,
+                    case when r.id=7 then 4 else 2 end crossCheckTarSur
+            from    users u
+            left    join emp_info ei on u.user_id=ei.users_id
+            join    users_roles ur on u.user_id=ur.users_user_id
+            join    role r on ur.roles_id=r.id
+            and     r.id in (6,7)
+            join    teritory td on u.teritory_id=td.id
+            and     (:tdId is null or td.id =:tdId)
+        )t1
+LEFT    JOIN 
+                (select  
+                        checked_by,
+                        teritory_id,
+                        role_id,
+                        count(outlet_id) total_cross_check,
+                        sum(case when yes=9 then 1 else 0 end)yes,
+                        sum(case when no > 0 then 1 else 0 end)no,
+                        sum(yes) yesCount,
+                        sum(no) noCount,
+                        sum(b.ans_count) correction
+                from    (select     checked_by,
+                                    teritory_id,
+                                    role_id,
+                                    outlet_id,
+                                    count(case when ans='yes' then 1 else null end) yes,
+                                    count(case when ans='no' then 1 else null end) no
+                            from 
+                                        (select  
+                                                        coa.checked_by,
+                                                        u.teritory_id,
+                                                        coa.role_id,
+                                                        coa.outlet_id,
+                                                        case when coa.option_id = 1 then 'yes' else 'no' end ans
+                                                from    CC_OUT_ANSWERS coa
+                                                join    users u on coa.checked_by=u.user_id
+                                                where   coa.cross_check_date= :targetDate
+                                                and     coa.role_id in (6,7)
+                                                and     (:tdId is null or u.teritory_id=:tdId)
+                                        )
+                            group   by checked_by,teritory_id,role_id,outlet_id
+                                    )a
+                                    left join (select  consumer_id,count(distinct question_id) ans_count
+                                                    from    CC_OUT_ACT_FIRST_UP_ANS coaf
+                                                    where   coaf.cross_check_date= :targetDate
+                                                    group   by consumer_id
+                                                )b on a.outlet_id=b.consumer_id
+                group   by checked_by,teritory_id,role_id
+        )t2 ON t1.teritory_id=t2.teritory_id
+LEFT    JOIN 
+                ( select  
+                        ddxo_dxo_id,
+                        u.teritory_id,
+                        count(con_out_id) activity
+                from    (select  add_date,case when dxo_id is null then ddxo_id else dxo_id end ddxo_dxo_id,cons_act_id con_out_id
+                            from    CONS_ON_THE_JOB_TRAIN
+                            union   all
+                            select  add_date,case when dxo_id is null then ddxo_id else dxo_id end ddxo_dxo_id,outlet_id con_out_id
+                            from    OUT_ON_THE_JOB_TRAIN
+                        ) cj
+                join    users u on cj.ddxo_dxo_id=u.user_id
+                where   add_date= :targetDate
+                and     (:tdId is null or u.teritory_id=:tdId)
+                group   by ddxo_dxo_id,u.teritory_id
+                )t3 ON t1.teritory_id=t3.teritory_id
+LEFT    JOIN 
+                (   select  
+                        checked_by,
+                        teritory_id,
+                        role_by,
+                        count(br_activity_consumer_id) total_cross_check_sur,
+                        sum(case when yes=9 then 1 else 0 end)yes,
+                        sum(case when no > 0 then 1 else 0 end)no,
+                        sum(yes) yesCount,
+                        sum(no) noCount
+                from    (select     checked_by,
+                                    teritory_id,
+                                    role_by,
+                                    br_activity_consumer_id,
+                                    count(case when ans='yes' then 1 else null end) yes,
+                                    count(case when ans='no' then 1 else null end) no
+                            from 
+                                        (select  
+                                                        checked_by,
+                                                        u.teritory_id,
+                                                        role_by,
+                                                        br_activity_consumer_id,
+                                                        case when option_id = 1 then 'yes' else 'no' end ans
+                                                from    CC_CONS_FIRST_ANSWERS cfa
+                                                join    users u on cfa.checked_by=u.user_id
+                                                where   cfa.cross_check_date=:targetDate
+                                                and     role_by in (6,7)
+                                                and     (:tdId is null or u.teritory_id=:tdId)
+                                        )
+                            group   by checked_by,teritory_id,role_by,br_activity_consumer_id
+                                    )
+                group   by checked_by,teritory_id,role_by
+        )t4 ON t1.teritory_id=t4.teritory_id
+Order   by t1.teritory_id
