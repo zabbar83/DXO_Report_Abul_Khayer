@@ -42,7 +42,7 @@ LEFT    JOIN
                         role_id,
                         count(outlet_id) total_cross_check,
                         sum(case when yes=9 then 1 else 0 end)yes,
-                        sum(case when no > 0 then 1 else 0 end)no,
+                        sum(case when no <> 9 and no <> 0 then 1 else 0 end)no,
                         sum(yes) yesCount,
                         sum(no) noCount,
                         sum(b.ans_count) correction
@@ -97,7 +97,7 @@ LEFT    JOIN
                         role_by,
                         count(br_activity_consumer_id) total_cross_check_sur,
                         sum(case when yes=9 then 1 else 0 end)yes,
-                        sum(case when no > 0 then 1 else 0 end)no,
+                        sum(case when no <> 9 and no <> 0 then 1 else 0 end)no,
                         sum(yes) yesCount,
                         sum(no) noCount
                 from    (select     checked_by,

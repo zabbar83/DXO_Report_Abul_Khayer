@@ -3,16 +3,16 @@ select
         t1.designation,
         t1.teritory_id,
         t1.territoryName,
-        NVL(t2.crossCheckTar,0) crossCheckTar,
+        NVL(t1.crossCheckTar,0) crossCheckTar,
         NVL(t2.total_cross_check,0) acheivement,
         NVL(t2.yes,0)yes,
         NVL(t2.no,0)no,
         NVL(t2.yesCount,0) yesCount,
         NVL(t2.noCount,0) noCount,
         NVL(t2.correction,0)correction,
-        NVL(t3.onTheJobTar,0)onTheJobTar,
+        NVL(t1.onTheJobTar,0)onTheJobTar,
         NVL(t3.activity,0)activity,
-        NVL(t4.crossCheckTarSur,0)crossCheckTarSur,
+        NVL(t1.crossCheckTarSur,0)crossCheckTarSur,
         NVL(t4.total_cross_check_sur,0)acheivementSur,
         NVL(t4.yes,0)yesSur,
         NVL(t4.no,0)noSur,
@@ -24,7 +24,10 @@ from
                         ei.emp_name name,
                         r.role designation,
                         v.teritory_id,
-                        v.teritory_name territoryName
+                        v.teritory_name territoryName,
+                        16 crossCheckTar,
+                        6 onTheJobTar,
+                        4 crossCheckTarSur
                 from    (select distinct teritory_id,teritory_name from v_teritory_all
                          where 1=1 and (:territoryId is null or teritory_id=:territoryId)) v
                 join    users u on v.teritory_id=u.teritory_id
@@ -38,10 +41,9 @@ LEFT    JOIN
                         checked_by,
                         teritory_id,
                         role_id,
-                        20 crossCheckTar,
                         count(outlet_id) total_cross_check,
                         sum(case when yes=9 then 1 else 0 end)yes,
-                        sum(case when no > 0 then 1 else 0 end)no,
+                        sum(case when no <> 9 and no <> 0 then 1 else 0 end)no,
                         sum(yes) yesCount,
                         sum(no) noCount,
                         sum(b.ans_count) correction
@@ -78,7 +80,6 @@ LEFT    JOIN
                 (select  
                         dxo_id,
                         u.teritory_id,
-                        6 onTheJobTar,
                         count(con_out_id) activity
                 from    (select  add_date,dxo_id,cons_act_id con_out_id
                             from    CONS_ON_THE_JOB_TRAIN
@@ -96,10 +97,9 @@ LEFT    JOIN
                         checked_by,
                         teritory_id,
                         role_by,
-                        4 crossCheckTarSur,
                         count(br_activity_consumer_id) total_cross_check_sur,
                         sum(case when yes=9 then 1 else 0 end)yes,
-                        sum(case when no > 0 then 1 else 0 end)no,
+                        sum(case when no <> 9 and no <> 0 then 1 else 0 end)no,
                         sum(yes) yesCount,
                         sum(no) noCount
                 from    (select     checked_by,
