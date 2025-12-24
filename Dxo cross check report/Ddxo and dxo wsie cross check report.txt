@@ -42,7 +42,7 @@ LEFT    JOIN
                         role_id,
                         count(outlet_id) total_cross_check,
                         sum(case when yes=9 then 1 else 0 end)yes,
-                        sum(case when no <> 9 and no <> 0 then 1 else 0 end)no,
+                        sum(case when no between 1 and 9 then 1 else 0 end)no,
                         sum(yes) yesCount,
                         sum(no) noCount,
                         sum(b.ans_count) correction
@@ -67,11 +67,16 @@ LEFT    JOIN
                                         )
                             group   by checked_by,teritory_id,role_id,outlet_id
                                     )a
-                                    left join (select  consumer_id,count(distinct question_id) ans_count
-                                                    from    CC_OUT_ACT_FIRST_UP_ANS coaf
-                                                    where   coaf.cross_check_date= :targetDate
+                                    left join (select  coaf.consumer_id,count(distinct coaf.question_id) ans_count
+                                                    from    (select distinct a.consumer_id,a.question_id, b.cross_check_ques_id, 2 option_id
+                                                                from CC_OUT_ACT_FIRST_UP_ANS a 
+                                                                join    cc_ques_out_ques_map b on a.question_id=b.activity_ques_id
+                                                                where a.cross_check_date= :targetDate
+                                                            ) coaf
+                                                    join    (select * from CC_OUT_ANSWERS where cross_check_date= :targetDate
+                                                    and option_id=2) ca on coaf.consumer_id=ca.outlet_id and coaf.option_id=ca.option_id and coaf.cross_check_ques_id=ca.question_id
                                                     group   by consumer_id
-                                                )b on a.outlet_id=b.consumer_id
+                                             )b on a.outlet_id=b.consumer_id
                 group   by checked_by,teritory_id,role_id
         )t2 ON t1.teritory_id=t2.teritory_id
 LEFT    JOIN 
@@ -97,7 +102,7 @@ LEFT    JOIN
                         role_by,
                         count(br_activity_consumer_id) total_cross_check_sur,
                         sum(case when yes=9 then 1 else 0 end)yes,
-                        sum(case when no <> 9 and no <> 0 then 1 else 0 end)no,
+                        sum(case when no between 1 and 9 then 1 else 0 end)no,
                         sum(yes) yesCount,
                         sum(no) noCount
                 from    (select     checked_by,

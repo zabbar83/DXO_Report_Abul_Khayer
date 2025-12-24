@@ -1,8 +1,8 @@
 select  
-        t1.name,
-        t1.designation,
-        t1.teritory_id,
-        t1.territoryName,
+        t1.name name,
+        t1.designation designation,
+        t1.teritory_id teritoryId,
+        t1.territoryName teritoryName,
         NVL(t1.crossCheckTar,0) crossCheckTar,
         NVL(t2.total_cross_check,0) acheivement,
         NVL(t2.yes,0)yes,

@@ -1,8 +1,8 @@
 select  
-        t1.name,
-        t1.designation,
-        t1.division_id,
-        t1.divisionName,
+        t1.name name,
+        t1.designation designation,
+        t1.division_id divisionId,
+        t1.divisionName divisionName,
         NVL(t1.crossCheckTar,0) crossCheckTar,
         NVL(t2.total_cross_check,0) acheivement,
         NVL(t2.yes,0)yes,
