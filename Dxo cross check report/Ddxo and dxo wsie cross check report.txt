@@ -1,6 +1,7 @@
 select  
         t1.name name,
         t1.designation designation,
+        t1.divisionId divisionId,
         t1.teritory_id teritoryId,
         t1.teritory_name teritoryName,
         NVL(t1.crossCheckTar,0) crossCheckTar,
@@ -22,6 +23,7 @@ from
         (
                             select  ei.emp_name name,
                     r.role designation,
+                    case when td.teritory_details like 'DIV%' then td.id else td.parent_id end divisionId,
                     td.id teritory_id,
                     td.teritory_name,
                     case when r.id=7 then 16 else 10 end crossCheckTar,
@@ -80,7 +82,7 @@ LEFT    JOIN
                 group   by checked_by,teritory_id,role_id
         )t2 ON t1.teritory_id=t2.teritory_id
 LEFT    JOIN 
-                ( select  
+                (select  
                         ddxo_dxo_id,
                         u.teritory_id,
                         count(con_out_id) activity
