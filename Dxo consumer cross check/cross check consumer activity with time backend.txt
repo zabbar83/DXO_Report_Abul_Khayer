@@ -1,0 +1,13 @@
+select  distinct
+        cca.br_activity_consumer_id,
+        bc.customer_name,
+        bc.customer_address,
+        cca.cross_check_time,
+        bcon.contact_number
+from    bractivity_consumer bc
+join    bractivity_contact bcon on bc.br_activity_contact_id=bcon.id
+join    cc_cons_first_answers cca on bc.br_activity_contact_id=cca.br_activity_consumer_id
+and     cca.cross_check_date= :targetDate
+join    users u on cca.checked_by=u.user_id
+join    teritory td on u.teritory_id=td.id
+and     (:tdId is null or td.id =:tdId)
