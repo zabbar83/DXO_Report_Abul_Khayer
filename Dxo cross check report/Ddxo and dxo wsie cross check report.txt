@@ -130,4 +130,4 @@ LEFT    JOIN
                                     )
                 group   by checked_by,teritory_id,role_by
         )t4 ON t1.teritory_id=t4.teritory_id
-Order   by t1.teritory_id
+Order   by  t1.divisionId, t1.teritory_id

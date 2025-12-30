@@ -1,0 +1,134 @@
+select  
+        c1.cross_check_date,
+        utd.name,
+        utd.designation,
+        v.division_id,
+        v.division_name,
+        v.teritory_id,
+        v.teritory_name,
+        v.route_id,
+        v.route_name,
+        c.id consumerId,
+        c.trade_license_name outletName,
+        NVL(c.mobile_no,' ')mobile_no,
+        NVL(c1.yesq1,' ') yesq1,
+        NVL(c1.noq1,' ') noq1,
+        NVL(c1.yesq2,' ') yesq2,
+        NVL(c1.noq2,' ') noq2,
+        NVL(c1.yesq3,' ') yesq3,
+        NVL(c1.noq3,' ') noq3,
+        NVL(c1.yesq4,' ') yesq4,
+        NVL(c1.noq4,' ') noq4,
+        NVL(c1.corrQues4,' ') corrQues4,
+        NVL(c1.yesq5,' ') yesq5,
+        NVL(c1.noq5,' ') noq5,
+        NVL(c1.corrQues5,' ') corrQues5,
+        NVL(c1.yesq6,' ') yesq6,
+        NVL(c1.noq6,' ') noq6,
+        NVL(c1.corrQues6,' ') corrQues6,
+        NVL(c1.yesq7,' ') yesq7,
+        NVL(c1.noq7,' ') noq7,
+        NVL(c1.corrQues7,' ') corrQues7,
+        NVL(c1.yesq8,' ') yesq8,
+        NVL(c1.noq8,' ') noq8,
+        NVL(c1.corrQues8,' ') corrQues8,
+        NVL(c1.yesq9,' ') yesq9,
+        NVL(c1.noq9,' ') noq9,
+        NVL(c1.corrQues9,' ') corrQues9
+from    consumer c
+join    consumer_teritory ct on c.id=ct.consumer_id
+join    v_teritory_all v on ct.teritory_id=v.route_id
+join    (select  
+                        a.checked_by,
+                        a.outlet_id consumer_id,
+                        a.cross_check_date,
+                        yesq1,
+                        noq1,
+                        yesq2,
+                        noq2,
+                        yesq3,
+                        noq3,
+                        yesq4,
+                        noq4,
+                        corrQues4,
+                        yesq5,
+                        noq5,
+                        corrQues5,
+                        yesq6,
+                        noq6,
+                        corrQues6,
+                        yesq7,
+                        noq7,
+                        corrQues7,
+                        yesq8,
+                        noq8,
+                        corrQues8,
+                        yesq9,
+                        noq9,
+                        corrQues9
+                from 
+                (select  
+                        co.cross_check_date,
+                        checked_by,
+                        outlet_id,
+                        max(case when q.id=1 and option_id=1 then '✔' else ' ' end) yesq1,
+                        max(case when q.id=1 and option_id=2 then 'X' else 'N/A' end) noq1,
+                        max(case when q.id=2 and option_id=1 then '✔' else ' ' end) yesq2,
+                        max(case when q.id=2 and option_id=2 then 'X' else 'N/A' end) noq2,
+                        max(case when q.id=3 and option_id=1 then '✔' else ' ' end) yesq3,
+                        max(case when q.id=3 and option_id=2 then 'X' else 'N/A' end) noq3,
+                        max(case when q.id=4 and option_id=1 then '✔' else ' ' end) yesq4,
+                        max(case when q.id=4 and option_id=2 then 'X' else 'N/A' end) noq4,
+                        max(case when q.id=5 and option_id=1 then '✔' else ' ' end) yesq5,
+                        max(case when q.id=5 and option_id=2 then 'X' else 'N/A' end) noq5,
+                        max(case when q.id=6 and option_id=1 then '✔' else ' ' end) yesq6,
+                        max(case when q.id=6 and option_id=2 then 'X' else 'N/A' end) noq6,
+                        max(case when q.id=7 and option_id=1 then '✔' else ' ' end) yesq7,
+                        max(case when q.id=7 and option_id=2 then 'X' else 'N/A' end) noq7,
+                        max(case when q.id=8 and option_id=1 then '✔' else ' ' end) yesq8,
+                        max(case when q.id=8 and option_id=2 then 'X' else 'N/A' end) noq8,
+                        max(case when q.id=9 and option_id=1 then '✔' else ' ' end) yesq9,
+                        max(case when q.id=9 and option_id=2 then 'X' else 'N/A' end) noq9
+                from    CC_OUT_ANSWERS co
+                join    cc_outlet_ques q on co.question_id=q.id
+                and     co.cross_check_date= :targetDate
+                group   by co.cross_check_date,checked_by,outlet_id
+                )a
+                left join 
+                (
+                select  
+                        consumer_id,
+                        max(case when cross_check_ques_id=4 then corr_ques else ' ' end) corrQues4,
+                        max(case when cross_check_ques_id=5 then corr_ques else ' ' end) corrQues5,
+                        max(case when cross_check_ques_id=6 then corr_ques else ' ' end) corrQues6,
+                        max(case when cross_check_ques_id=7 then corr_ques else ' ' end) corrQues7,
+                        max(case when cross_check_ques_id=8 then corr_ques else ' ' end) corrQues8,
+                        max(case when cross_check_ques_id=9 then corr_ques else ' ' end) corrQues9
+                from
+                (select      coaf.consumer_id,
+                            cross_check_ques_id,
+                            listagg(cao.question_option,', ') within group(order by coaf.consumer_id,cross_check_ques_id) corr_ques
+                from    (select distinct a.consumer_id,a.question_id, b.cross_check_ques_id,a.option_map_id
+                            from CC_OUT_ACT_FIRST_UP_ANS a 
+                            join    cc_ques_out_ques_map b on a.question_id=b.activity_ques_id
+                            where a.cross_check_date= :targetDate
+                        ) coaf
+                join    (select * from CC_OUT_ANSWERS where cross_check_date= :targetDate
+                and option_id=2) ca on coaf.consumer_id=ca.outlet_id and coaf.cross_check_ques_id=ca.question_id
+                join    cc_out_act_opt cao on coaf.option_map_id=cao.id
+                group  by coaf.consumer_id,cross_check_ques_id
+                )
+                group  by consumer_id
+                )b on a.outlet_id=b.consumer_id
+        ) c1 on ct.consumer_id=c1.consumer_id
+join    (select  
+                    u1.user_id,
+                    ei.emp_name name,
+                    r.role designation
+            from    users u1 
+            left    join emp_info ei on u1.user_id=ei.users_id
+            join    users_roles ur on u1.user_id=ur.users_user_id
+            join    role r on ur.roles_id=r.id
+            and     r.id in (6,7)
+        )utd on c1.checked_by = utd.user_id
+order  by v.teritory_id,v.route_id,c.id
