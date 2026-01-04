@@ -13,7 +13,7 @@ SELECT DISTINCT c1.cross_check_date                           AS crossCheckDate,
                      
                                     ab.address_line1                         AS clusterName, 
                      
-                                    pd.cross_checked_user                    AS brUserId, 
+                                    c1.checked_user                    AS brUserId, 
                                     br.name                                  AS brName, 
                                     br.contact_number                        AS brContactNumber, 
                      
@@ -57,12 +57,8 @@ SELECT DISTINCT c1.cross_check_date                           AS crossCheckDate,
                              JOIN appdxo.address_book ab 
                                   ON ab.id = ca.address_id 
                      
-                             JOIN appdxo.CC_FIRST_OUT_PRODUCT_RECORD pd 
-                                  ON pd.outlet_id = c1.outlet_id 
-                                      AND pd.cross_check_date = :targetDate 
-                     
                              JOIN appdxo.BRAND_REPRESENTATIVE br 
-                                  ON pd.cross_checked_user = br.BR_USER_USER_ID 
+                                  ON c1.checked_user = br.BR_USER_USER_ID 
                      
                              JOIN (SELECT consumer_id, 
                                           MAX(CASE WHEN question_id = 1 THEN ans END)  AS channel_type, 
