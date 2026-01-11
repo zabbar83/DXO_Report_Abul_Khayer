@@ -46,7 +46,8 @@ SELECT DISTINCT c1.cross_check_date                           AS crossCheckDate,
                      
                              JOIN CC_OUT_ANSWERS c1 
                                   ON ct.consumer_id = c1.outlet_id 
-                                      AND c1.cross_check_date = :targetDate 
+                                      AND c1.cross_check_date = :targetDate
+                                      AND c1.checked_by = :userId
                      
                              JOIN appdxo.consumer c 
                                   ON c.id = ct.consumer_id 
@@ -93,3 +94,4 @@ SELECT DISTINCT c1.cross_check_date                           AS crossCheckDate,
                                               ) 
                                         GROUP BY consumer_id) qp 
                                        ON qp.consumer_id = c.id
+                                       
