@@ -1,13 +1,18 @@
-select  distinct
-        cca.br_activity_consumer_id,
-        bc.customer_name,
-        bc.customer_address,
-        cca.cross_check_time,
-        bcon.contact_number
-from    bractivity_consumer bc
-join    bractivity_contact bcon on bc.br_activity_contact_id=bcon.id
-join    cc_cons_first_answers cca on bc.br_activity_contact_id=cca.br_activity_consumer_id
-and     cca.cross_check_date= :targetDate
-join    users u on cca.checked_by=u.user_id
-join    teritory td on u.teritory_id=td.id
-and     (:tdId is null or td.id =:tdId)
+select distinct cca.br_activity_consumer_id as brActivityConsumerId,
+                bc.customer_name            as Name,
+                cca.cross_check_time           ccTime,
+                bcon.contact_number            phnNumber,
+                baci.gender                    gender,
+                cwe.relation                   chiefEarner,
+                ccp.profession
+from APPDXO.bractivity_consumer bc
+         join APPDXO.bractivity_contact bcon on bc.br_activity_contact_id = bcon.id
+         join APPDXO.cc_cons_first_answers cca on bc.id = cca.br_activity_consumer_id
+    and cca.cross_check_date = :targetDate
+    and cca.checked_by = :userId
+         join APPDXO.br_activity_cons_info baci on cca.br_activity_consumer_id = baci.br_activity_consumer_id
+         join APPDXO.chief_wage_earner cwe on baci.earner_id = cwe.id
+         join APPDXO.product_consumer_prof ccp on baci.cwe_profession_id = ccp.id
+         join APPDXO.users u on cca.checked_by = u.user_id
+         join APPDXO.teritory td on u.teritory_id = td.id
+    and (:tdId is null or td.id = :tdId)
