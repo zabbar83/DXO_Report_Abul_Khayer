@@ -10,7 +10,7 @@ select
         v.route_name routeName,
         CROSS_CHECK_START_TIME ccStartTime,
         CROSS_CHECK_END_TIME ccEndTime,
-        CROSS_CHECK_END_TIME - CROSS_CHECK_START_TIME executionTime,
+        substr(CROSS_CHECK_END_TIME - CROSS_CHECK_START_TIME,11,14) executionTime,
         c.id consumerId,
         c.trade_license_name outletName,
         NVL(c.mobile_no,' ')mobileNo,

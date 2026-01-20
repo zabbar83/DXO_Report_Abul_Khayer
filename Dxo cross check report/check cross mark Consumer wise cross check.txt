@@ -6,7 +6,7 @@ select
         Div_Ter_Name DivTerName,
         CROSS_CHECK_START_TIME ccStartTime,
         CROSS_CHECK_END_TIME ccEndTime,
-        CROSS_CHECK_END_TIME - CROSS_CHECK_START_TIME executionTime,
+        substr(CROSS_CHECK_END_TIME - CROSS_CHECK_START_TIME,11,14) executionTime,
         bc.id consumerId,
         bc.customer_name outletName,
         NVL(bco.contact_number,' ') mobileNo,
