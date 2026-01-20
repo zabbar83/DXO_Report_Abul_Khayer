@@ -4,7 +4,9 @@ select
         utd.designation as designation,
         utd.Div_Ter_Id DivTerId,
         Div_Ter_Name DivTerName,
-        to_char(cross_check_time) as startTime,
+        CROSS_CHECK_START_TIME ccStartTime,
+        CROSS_CHECK_END_TIME ccEndTime,
+        CROSS_CHECK_END_TIME - CROSS_CHECK_START_TIME executionTime,
         bc.id consumerId,
         bc.customer_name outletName,
         NVL(bco.contact_number,' ') mobileNo,
@@ -33,6 +35,8 @@ join    (select
                         co.cross_check_time,
                         co.checked_by,
                         co.br_activity_consumer_id,
+                        CROSS_CHECK_START_TIME,
+                        CROSS_CHECK_END_TIME,
                         max(case when q.id=1 and option_id=1 then 'true' else ' ' end) yesq1,
                         max(case when q.id=1 and option_id=2 then 'X' else 'N/A' end) noq1,
                         max(case when q.id=2 and option_id=1 then 'true' else ' ' end) yesq2,
@@ -54,7 +58,8 @@ join    (select
                 from    cc_cons_first_answers co
                 join    cc_cons_ques q on co.question_id=q.id
                 and     co.cross_check_date= :targetDate
-                group   by co.cross_check_date,co.cross_check_time,co.checked_by,co.br_activity_consumer_id
+                group   by co.cross_check_date,co.cross_check_time,co.checked_by,co.br_activity_consumer_id,CROSS_CHECK_START_TIME,
+                        CROSS_CHECK_END_TIME
 ) c1 on bc.id=c1.br_activity_consumer_id
 join    (select  
                     u1.user_id,
