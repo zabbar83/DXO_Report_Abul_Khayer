@@ -1,5 +1,5 @@
 select  
-                        cj.add_date addDate,
+                        to_char(cj.add_date) addDate,
                         ei.emp_name ddxoDxoName,
                         r.role designation,
                         bre.name adxoName,
