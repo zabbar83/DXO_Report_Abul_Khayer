@@ -1,0 +1,28 @@
+select  
+                        cj.add_date,
+                        ei.emp_name ddxoDxoName,
+                        r.role designation,
+                        bre.name adxoName,
+                        ddxo_dxo_id,
+                        u.teritory_id,
+                        listagg(cj.outlet_name, ', ') within group (order by ddxo_dxo_id) outletConsName,
+                        min(add_time) startTime,
+                        max(add_time) endTime,
+                        substr(max(add_time) - min(add_time),11,14) executionTime,
+                        count(con_out_id) activity
+                from    (select  ct.add_date,ct.add_time,case when dxo_id is null then ddxo_id else dxo_id end ddxo_dxo_id,ct.adxo_id,ct.cons_act_id con_out_id,bc.customer_name outlet_name
+                            from    CONS_ON_THE_JOB_TRAIN ct
+                            join    bractivity_consumer bc on ct.cons_act_id=bc.id
+                            where   ct.add_date between :fromDate and :toDate
+                            union   all
+                            select  ot.add_date,ot.add_time,case when dxo_id is null then ddxo_id else dxo_id end ddxo_dxo_id,ot.adxo_id,ot.outlet_id con_out_id,c.trade_license_name outlet_name
+                            from    OUT_ON_THE_JOB_TRAIN ot
+                            join    consumer c on ot.outlet_id=c.id
+                            where   ot.add_date between :fromDate and :toDate
+                        ) cj
+                join    (select * from users where (:tdId is null or teritory_id=:tdId)) u on cj.ddxo_dxo_id=u.user_id
+                left    join emp_info ei on u.user_id=ei.users_id
+                left    join users_roles ur on u.user_id=ur.users_user_id
+                left    join role r on ur.roles_id=r.id
+                left    join brand_representative bre on cj.adxo_id=bre.br_user_user_id
+                group   by cj.add_date,ei.emp_name, r.role,bre.name,ddxo_dxo_id, u.teritory_id
