@@ -5,6 +5,10 @@ select
                         bre.name adxoName,
                         ddxo_dxo_id ddxo,
                         u.teritory_id divTerId,
+                        cj.division_id divisionId,
+                        cj.division_name divisionName,
+                        cj.teritory_id teritoryId,
+                        cj.teritory_name teritoryName,
                         listagg(cj.outlet_name, ', ') within group (order by cj.add_date,ddxo_dxo_id) outletConsName,
                         min(add_time) startTime,
                         max(add_time) endTime,
@@ -13,6 +17,10 @@ select
                 from    (
                             select  ot.add_date,ot.add_time,
                                     case when dxo_id is null then ddxo_id else dxo_id end ddxo_dxo_id,
+                                    v.division_id,
+                                    v.division_name,
+                                    v.teritory_id,
+                                    v.teritory_name,
                                     ot.adxo_id,ot.outlet_id con_out_id,
                                     c.trade_license_name outlet_name
                             from    OUT_ON_THE_JOB_TRAIN ot
@@ -29,5 +37,6 @@ select
                 join    users_roles ur on u.user_id=ur.users_user_id
                 join    role r on ur.roles_id=r.id
                 join    brand_representative bre on cj.adxo_id=bre.br_user_user_id
-                group   by cj.add_date,ei.emp_name, r.role,bre.name,ddxo_dxo_id, u.teritory_id
+                group   by cj.add_date,ei.emp_name, r.role,bre.name,ddxo_dxo_id, u.teritory_id,cj.division_id,
+                                    cj.division_name,cj.teritory_id,cj.teritory_name
                 order   by cj.add_date,u.teritory_id

@@ -4,6 +4,7 @@ select
         utd.designation as designation,
         utd.Div_Ter_Id DivTerId,
         Div_Ter_Name DivTerName,
+        c1.adxo_name adxoName,
         CROSS_CHECK_START_TIME ccStartTime,
         CROSS_CHECK_END_TIME ccEndTime,
         substr(CROSS_CHECK_END_TIME - CROSS_CHECK_START_TIME,11,14) executionTime,
@@ -34,6 +35,7 @@ join    (select
                         co.cross_check_date,
                         co.cross_check_time,
                         co.checked_by,
+                        br.name adxo_name,
                         co.br_activity_consumer_id,
                         CROSS_CHECK_START_TIME,
                         CROSS_CHECK_END_TIME,
@@ -57,8 +59,9 @@ join    (select
                         max(case when q.id=9 and option_id=2 then 'X' else 'N/A' end) noq9
                 from    cc_cons_first_answers co
                 join    cc_cons_ques q on co.question_id=q.id
+                join    brand_representative br on co.cross_checked_user=br.br_user_user_id
                 and     co.cross_check_date= :targetDate
-                group   by co.cross_check_date,co.cross_check_time,co.checked_by,co.br_activity_consumer_id,CROSS_CHECK_START_TIME,
+                group   by co.cross_check_date,co.cross_check_time,co.checked_by,br.name,co.br_activity_consumer_id,CROSS_CHECK_START_TIME,
                         CROSS_CHECK_END_TIME
 ) c1 on bc.id=c1.br_activity_consumer_id
 join    (select  

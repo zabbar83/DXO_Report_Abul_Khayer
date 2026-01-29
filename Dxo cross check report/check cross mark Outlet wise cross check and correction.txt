@@ -8,6 +8,7 @@ select
         v.teritory_name teritoryName,
         v.route_id routeId,
         v.route_name routeName,
+        c1.adxo_name adxoName,
         CROSS_CHECK_START_TIME ccStartTime,
         CROSS_CHECK_END_TIME ccEndTime,
         substr(CROSS_CHECK_END_TIME - CROSS_CHECK_START_TIME,11,14) executionTime,
@@ -48,6 +49,7 @@ join    v_teritory_all v on ct.teritory_id=v.route_id
 join    (select  
                         a.checked_by,
                         a.outlet_id consumer_id,
+                        a.adxo_name,
                         a.cross_check_date,
                         a.cross_check_time,
                         a.CROSS_CHECK_START_TIME,
@@ -83,6 +85,7 @@ join    (select
                 (select  
                         co.cross_check_date,
                         co.cross_check_time,
+                        br.name adxo_name,
                         co.checked_by,
                         co.outlet_id,
                         co.CROSS_CHECK_START_TIME,
@@ -111,6 +114,7 @@ join    (select
                 from    CC_OUT_ANSWERS co
                 join    cc_outlet_ques q on co.question_id=q.id
                 and     co.cross_check_date= :targetDate
+                join    brand_representative br on co.checked_user=br.br_user_user_id
                 left    join (select    cfo.cross_check_date,
                                         cfo.outlet_id,
                                         listagg (qmp.VARIANT_NAME,', ') within group (order by cfo.outlet_id) VARIANT_NAME
@@ -118,7 +122,7 @@ join    (select
                                 join ques_market_product qmp on cfo.ques_mark_prod_id=qmp.id
                                 group by cfo.cross_check_date,cfo.outlet_id
                               ) q10 on (co.cross_check_date=q10.cross_check_date and co.outlet_id=q10.outlet_id)
-                group   by co.cross_check_date,co.cross_check_time,co.checked_by,co.outlet_id,co.CROSS_CHECK_START_TIME,
+                group   by co.cross_check_date,br.name,co.cross_check_time,co.checked_by,co.outlet_id,co.CROSS_CHECK_START_TIME,
                         co.CROSS_CHECK_END_TIME
                 )a
                 left join 
