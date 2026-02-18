@@ -1,9 +1,11 @@
 select  
         ddxo_dxo_id,
+        case when ei.emp_name like 'DXO%' then 'DXO' else 'DDXO' end designation,
         ei.emp_name ddxo_dxo_name,
-        teritory_id,
-        adxoId,
-        adxoName,
+        teritory_id Division_territory_id,
+        t.teritory_name Division_territory_name,
+        adxoId adxo_id,
+        adxoName adxo_Name,
         
         sum(total_cross_check) cross_outlet_count, 
         sum(yes) cross_outlet_yes_count, 
@@ -16,20 +18,20 @@ select
         sum(yesCon) yesCon,
         sum(noCon) noCon,
         sum(yesCountCon) yesCountCon,
-        sum(noCountCon) noCountCon
-from    (
-        select 
-                          checked_by ddxo_dxo_id, 
-                          teritory_id,
-                          adxoId,
-                          adxoName,
+        sum(noCountCon) noCouNtcon
+From    (
+        Select 
+                          Checked_By Ddxo_Dxo_Id, 
+                          Teritory_Id,
+                          Adxoid,
+                          Adxoname,
                           --role_id, 
-                          count(outlet_id) total_cross_check, 
-                          sum(case when yes=9 then 1 else 0 end)yes, 
-                          sum(case when no between 1 and 9 then 1 else 0 end)no, 
-                          sum(yes) yesCount, 
-                          sum(no) noCount, 
-                          sum(b.ans_count) correction ,
+                          Count(Outlet_Id) Total_Cross_Check, 
+                          Sum(Case When Yes=9 Then 1 Else 0 End)Yes, 
+                          Sum(Case When No Between 1 And 9 Then 1 Else 0 End)No, 
+                          Sum(Yes) Yescount, 
+                          Sum(No) Nocount, 
+                          Sum(B.ans_count) correction ,
                           0 activity,
                           0 total_cross_check_sur,
                           0 yesCon,
@@ -155,5 +157,6 @@ union all
           
         )sub_t
 left    join emp_info ei on sub_t.ddxo_dxo_id=ei.users_id
-group   by ddxo_dxo_id,ei.emp_name,teritory_id,adxoId,adxoName
+join    teritory t on sub_t.Teritory_Id=id
+group   by ddxo_dxo_id,ei.emp_name,teritory_id,t.teritory_name,adxoId,adxoName
 order   by teritory_id,adxoId
