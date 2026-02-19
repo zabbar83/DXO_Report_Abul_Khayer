@@ -26,9 +26,9 @@ select
                       case when td.teritory_details like 'DIV%' then td.id else td.parent_id end divisionId, 
                       td.id teritory_id, 
                       td.teritory_name, 
-                      case when r.id=7 then 16 else 10 end crossCheckTar, 
-                      case when r.id=7 then 6 else 5 end onTheJobTar, 
-                      case when r.id=7 then 4 else 2 end crossCheckTarSur 
+                      case when r.id=7 then 12 else 7 end crossCheckTar,    
+                          case when r.id=7 then 5 else 4 end onTheJobTar,    
+                          case when r.id=7 then 3 else 2 end crossCheckTarSur 
               from    users u 
               left    join emp_info ei on u.user_id=ei.users_id 
               join    users_roles ur on u.user_id=ur.users_user_id 
