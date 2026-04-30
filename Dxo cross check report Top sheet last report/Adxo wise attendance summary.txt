@@ -1,0 +1,64 @@
+select  
+        divisionId,
+        divisionName,
+        teritoryId,
+        teritoryName,
+        count(userName) totalAdxo,
+        count(case when attendanceStatus='YES' then 1 else null end) adxoPresent,
+        count(case when attendanceStatus='NO' then 1 else null end) adxoAbsent,
+        count(case when leaveStatus='YES' then 1 else null end) leave,
+        count(case when leaveDescription='DAY OFF' then 1 else null end) dutyOff,
+        count(case when leaveDescription is not null and leaveDescription !='DAY OFF' then 1 else null end) others
+from    (
+            SELECT DISTINCT
+                TO_CHAR(TRUNC(ba.attendance_date), 'DD-MON-YY') AS attendanceDate,
+                vta.division_id AS divisionId,
+                vta.division_name AS divisionName,
+                vta.teritory_id AS teritoryId,
+                vta.teritory_name AS teritoryName,
+                bu.user_name AS userName,
+                br.name AS brName,
+                'YES' AS attendanceStatus,
+                'NO' AS leaveStatus,
+                NULL AS leaveDescription,
+                TO_CHAR(ba.attendance_date_time, 'DD-MON-YY HH:MI:SS AM') AS attendanceDateTime
+                FROM v_teritory_all vta
+            JOIN bruser_teritory bt ON bt.teritory_id = vta.teritory_id
+                AND SYSDATE BETWEEN bt.ed AND bt.td
+                AND (:divisionId =0 OR vta.division_id = :divisionId)
+            JOIN bruser bu ON bu.user_id = bt.bruser_id
+            JOIN brand_representative br ON bu.user_id = br.br_user_user_id
+            JOIN bruser_attendance ba ON br.br_user_user_id = ba.br_user_user_id
+             AND TRUNC(ba.attendance_date) BETWEEN :fromDate AND :toDate
+            
+            UNION ALL
+            
+            SELECT DISTINCT
+                TO_CHAR(TRUNC(bl.leave_date_time), 'DD-MON-YY') AS ATTENDANCE_DATE,
+                vta.division_id,
+                vta.division_name,
+                vta.teritory_id,
+                vta.teritory_name,
+                bu.user_name,
+                br.name,
+                'NO' AS attendance_status,
+                'YES' AS leave_status,
+                bl.description AS leave_description,
+                NULL AS attendance_date_time
+            FROM v_teritory_all vta
+            JOIN bruser_teritory bt ON bt.teritory_id = vta.teritory_id
+                AND SYSDATE BETWEEN bt.ed AND bt.td
+                AND (:divisionId =0 OR vta.division_id = :divisionId)
+            JOIN bruser bu ON bu.user_id = bt.bruser_id
+            JOIN brand_representative br ON bu.user_id = br.br_user_user_id
+            JOIN br_user_leave bl ON bl.br_user_user_id = bu.user_id
+            
+             AND TRUNC(bl.leave_date_time) BETWEEN :fromDate AND :toDate
+                AND NOT EXISTS (
+                    SELECT 1 FROM bruser_attendance ba
+                    WHERE ba.br_user_user_id = bu.user_id
+                    AND TRUNC(ba.attendance_date) = TRUNC(bl.leave_date_time)
+                )
+)
+group by divisionId, divisionName, teritoryId, teritoryName
+order by divisionId, teritoryId

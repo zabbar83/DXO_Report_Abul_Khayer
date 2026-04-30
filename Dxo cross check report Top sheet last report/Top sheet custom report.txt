@@ -1,0 +1,162 @@
+select  
+        ddxo_dxo_id,
+        case when ei.emp_name like 'DXO%' then 'DXO' else 'DDXO' end designation,
+        ei.emp_name ddxo_dxo_name,
+        teritory_id Division_territory_id,
+        t.teritory_name Division_territory_name,
+        adxoId adxo_id,
+        adxoName adxo_Name,
+        
+        sum(total_cross_check) cross_outlet_count, 
+        sum(yes) cross_outlet_yes_count, 
+        sum(no) cross_outlet_no_count, 
+        sum(yesCount) cross_Yes_Count, 
+        sum(noCount) cross_No_Count, 
+        sum(correction ) cross_correction,
+        sum(activity) on_the_activity,
+        sum(total_cross_check_sur) cross_con_count,
+        sum(yesCon) yesCon,
+        sum(noCon) noCon,
+        sum(yesCountCon) yesCountCon,
+        sum(noCountCon) noCouNtcon
+From    (
+        Select 
+                          Checked_By Ddxo_Dxo_Id, 
+                          Teritory_Id,
+                          Adxoid,
+                          Adxoname,
+                          --role_id, 
+                          Count(Outlet_Id) Total_Cross_Check, 
+                          Sum(Case When Yes=9 Then 1 Else 0 End)Yes, 
+                          Sum(Case When No Between 1 And 9 Then 1 Else 0 End)No, 
+                          Sum(Yes) Yescount, 
+                          Sum(No) Nocount, 
+                          Sum(B.ans_count) correction ,
+                          0 activity,
+                          0 total_cross_check_sur,
+                          0 yesCon,
+                          0 noCon,
+                          0 yesCountCon,
+                          0 noCountCon
+                  from    (select     checked_by, 
+                                      teritory_id, 
+                                      adxoId,
+                                      adxoName,
+                                      role_id, 
+                                      outlet_id, 
+                                      count(case when ans='yes' then 1 else null end) yes, 
+                                      count(case when ans='no' then 1 else null end) no 
+                              from 
+                                          (select 
+                                                          coa.checked_by, 
+                                                          u.teritory_id,
+                                                          coa.checked_user adxoId,
+                                                          br.name adxoName,
+                                                          coa.role_id, 
+                                                          coa.outlet_id, 
+                                                          case when coa.option_id = 1 then 'yes' else 'no' end ans 
+                                                  from    CC_OUT_ANSWERS coa 
+                                                  join    users u on coa.checked_by=u.user_id
+                                                  join     brand_representative br on coa.checked_user=br.br_user_user_id
+                                                  where   to_char(coa.cross_check_date,'MM-yy')= :targetDate 
+                                                  and     coa.role_id in (6,7) 
+                                                  and     (  :teritoryId is null or u.teritory_id=  :teritoryId) 
+                                          ) 
+                              group   by checked_by,teritory_id,adxoId,adxoName,role_id,outlet_id 
+                                      )a 
+                                      left join (select  coaf.consumer_id,count(distinct coaf.question_id) ans_count 
+                                                      from    (select distinct a.consumer_id,a.question_id, b.cross_check_ques_id, 2 option_id 
+                                                                  from CC_OUT_ACT_FIRST_UP_ANS a 
+                                                                  join    cc_ques_out_ques_map b on a.question_id=b.activity_ques_id 
+                                                                  where to_char(a.cross_check_date,'MM-yy')= :targetDate 
+                                                              ) coaf 
+                                                      join    (select * from CC_OUT_ANSWERS where to_char(cross_check_date,'MM-yy')= :targetDate
+                                                      and option_id=2) ca on coaf.consumer_id=ca.outlet_id and coaf.option_id=ca.option_id and coaf.cross_check_ques_id=ca.question_id 
+                                                      group   by consumer_id 
+                                               )b on a.outlet_id=b.consumer_id 
+                  group   by checked_by,adxoId,adxoName,teritory_id
+
+union all
+
+select 
+                          ddxo_dxo_id, 
+                          u.teritory_id, 
+                          adxo_id adxoId,
+                          br.name adxoName,
+                          --0 role_id,
+                          0 total_cross_check,
+                          0 yes,
+                          0 no,
+                          0 yesCount,
+                          0 noCount,
+                          0 correction,
+                          count(con_out_id) activity,
+                          0 total_cross_check_sur,
+                          0 yesCon,
+                          0 noCon,
+                          0 yesCountCon,
+                          0 noCountCon
+                  from    (select  add_date,case when dxo_id is null then ddxo_id else dxo_id end ddxo_dxo_id,cons_act_id con_out_id,adxo_id
+                              from    CONS_ON_THE_JOB_TRAIN 
+                              union   all 
+                              select  add_date,case when dxo_id is null then ddxo_id else dxo_id end ddxo_dxo_id,outlet_id con_out_id ,adxo_id
+                              from    OUT_ON_THE_JOB_TRAIN 
+                          ) cj
+                  join    brand_representative br on cj.adxo_id=br.br_user_user_id
+                  join    users u on cj.ddxo_dxo_id=u.user_id 
+                  where   to_char(add_date,'MM-yy')= :targetDate
+                  and     (:teritoryId is null or u.teritory_id=  :teritoryId) 
+                  group   by ddxo_dxo_id,u.teritory_id ,adxo_id,br.name
+
+union all
+
+   select 
+                          checked_by ddxo_dxo_id, 
+                          teritory_id,
+                          adxoId,
+                          adxoName,
+                          --role_by,
+                          0 total_cross_check,
+                          0 yes,
+                          0 no,
+                          0 yesCount,
+                          0 noCount,
+                          0 correction,
+                          0 activity,
+                          count(br_activity_consumer_id) total_cross_check_sur, 
+                          sum(case when yes=9 then 1 else 0 end) yesCon, 
+                          sum(case when no between 1 and 9 then 1 else 0 end)noCon, 
+                          sum(yes) yesCountCon, 
+                          sum(no) noCountCon 
+                  from    (select     checked_by, 
+                                      teritory_id,
+                                      adxoId,adxoName,
+                                      role_by, 
+                                      br_activity_consumer_id, 
+                                      count(case when ans='yes' then 1 else null end) yes, 
+                                      count(case when ans='no' then 1 else null end) no 
+                              from 
+                                          (select 
+                                                          checked_by, 
+                                                          u.teritory_id,
+                                                          cfa.cross_checked_user adxoId,
+                                                          br.name adxoName,
+                                                          role_by, 
+                                                          br_activity_consumer_id, 
+                                                          case when option_id = 1 then 'yes' else 'no' end ans 
+                                                  from    CC_CONS_FIRST_ANSWERS cfa 
+                                                  join    users u on cfa.checked_by=u.user_id
+                                                  join     brand_representative br on cfa.cross_checked_user=br.br_user_user_id
+                                                  where   to_char(cfa.cross_check_date,'MM-yy')= :targetDate
+                                                  and     role_by in (6,7) 
+                                                  and     (  :teritoryId is null or u.teritory_id=  :teritoryId) 
+                                          ) 
+                              group   by checked_by,teritory_id,adxoId,adxoName,role_by,br_activity_consumer_id 
+                                      ) 
+                  group   by checked_by,teritory_id,adxoId,adxoName 
+          
+        )sub_t
+left    join emp_info ei on sub_t.ddxo_dxo_id=ei.users_id
+join    teritory t on sub_t.Teritory_Id=id
+group   by ddxo_dxo_id,ei.emp_name,teritory_id,t.teritory_name,adxoId,adxoName
+order   by teritory_id,adxoId
