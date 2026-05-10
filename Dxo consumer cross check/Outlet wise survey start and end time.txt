@@ -1,0 +1,28 @@
+select  
+        distinct
+        qa.target_date qaDate,
+        mc.metro_status market,
+        vta.division_id divisionId,
+        vta.division_name divisionName,
+        vta.teritory_id territoryId,
+        vta.teritory_name territoryName,
+        vta.route_id routeId,
+        vta.route_name routeName,
+        br.br_user_user_id adxoId,
+        br.name adxoName,
+        c.id outletId,
+        c.trade_license_name outletName,
+        NVL(c.mobile_no, 'N/A') retailerNumber,
+        NVL(to_char(qa.START_TIME, 'hh:mm:ss'),' ') startTime,
+        NVL(to_char(qa.END_TIME, 'hh:mm:ss'),' ') endTime,
+        NVL(substr(qa.END_TIME - qa.START_TIME ,12,8),' ') durationTime
+from    appdxo.v_teritory_all vta
+        join appdxo.consumer_teritory ct on ct.teritory_id = vta.route_id
+        AND (:divisionId is null or vta.division_id = :divisionId)
+        AND (:territoryId is null or vta.teritory_id = :territoryId)
+        join question_answers qa on ct.consumer_id=qa.consumer_id
+        and  qa.target_date between :fromDate and :toDate
+        join appdxo.consumer c on c.id = ct.consumer_id
+        join appdxo.BRAND_REPRESENTATIVE br on qa.br_user_id = br.BR_USER_USER_ID
+        join appdxo.market_category mc on vta.teritory_id=territory_id
+order   by qa.target_date, vta.division_id, vta.teritory_id, vta.route_id, br.br_user_user_id, c.id

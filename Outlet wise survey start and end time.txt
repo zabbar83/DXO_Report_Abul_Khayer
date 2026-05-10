@@ -1,0 +1,31 @@
+select  
+        distinct
+        coa.target_date coaDate,
+        vta.division_id divisionId,
+        vta.division_name divisionName,
+        vta.teritory_id territoryId,
+        vta.teritory_name territoryName,
+        vta.route_id routeId,
+        vta.route_name routeName,
+        br.br_user_user_id adxoId,
+        br.name adxoName,
+        c.id outletId,
+        c.trade_license_name outletName,
+        NVL(c.mobile_no, 'N/A') retailerNumber,
+        NVL(to_char(coa.cross_check_start_time, 'hh:mm:ss'),' ') startTime,
+        NVL(to_char(coa.cross_check_end_time, 'hh:mm:ss'),' ') endTime,
+        NVL(substr(coa.cross_check_end_time - coa.cross_check_start_time ,12,8),' ') durationTime
+from    appdxo.v_teritory_all vta
+        join appdxo.consumer_teritory ct on ct.teritory_id = vta.route_id
+        AND (:territoryId is null or vta.teritory_id = :territoryId)
+        AND (:divisionId is null or vta.division_id = :divisionId)
+        join CC_OUT_ANSWERS coa on ct.consumer_id=coa.outlet_id
+        and  coa.target_date between :fromDate and :toDate
+        join appdxo.consumer c on c.id = ct.consumer_id
+        join appdxo.consumer_address ca on c.id = ca.consumer_id
+        join appdxo.address_book ab on ab.id = ca.address_id
+        join appdxo.product_record pd on c.id = pd.consumer_id
+        and pd.target_date between :fromDate and :toDate
+        join appdxo.BRAND_REPRESENTATIVE br on pd.br_user_id = br.BR_USER_USER_ID
+        join appdxo.ques_market_product p on p.id = pd.ques_market_product_id
+order   by coa.target_date, vta.division_id, vta.teritory_id, vta.route_id, br.br_user_user_id, c.id
